@@ -8,133 +8,85 @@
 
 import UIKit
 import Photos
+import BSImagePicker
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UIScrollViewDelegate {
 
-    private let cellID = "CellID"
-    
-    public var imagePickerController: UIImagePickerController?
-    
-    public var refUrl: Any?
-    
-    var fetchResult: PHFetchResult<PHAsset>!
     
     @IBOutlet weak var selectImgBtn: UIButton!
     
     @IBOutlet weak var metadataTxtView: UITextView!
     
-    @IBOutlet weak var selectedImageView: UIImageView!
+    @IBOutlet weak var scrollView: UIScrollView!
     
-    @IBOutlet weak var galleryCollectionView: UICollectionViewCell!
-    
-    internal var selectedImage: UIImage? {
-        get {
-            return self.selectedImageView.image
-        }
-        set {
-            switch newValue {
-            case nil:
-                self.selectedImageView.image = nil
-            default:
-                self.selectedImageView.image = newValue
-            }
-            
-        }
-    }
+    var selectedAssets = [PHAsset]()
+    var photoArray = [UIImage]()
+    var mdDict: Dictionary<String, Any> = [:]
     
     override func viewDidLoad() {
         super.viewDidLoad()
         selectImgBtn.layer.cornerRadius = 4
-        
-        fetchAssets()
-        
     }
-    
-    private func setupCollectionView() {
-//        galleryCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: cellID)
-    }
-    
-    private func fetchAssets() {
-        fetchResult = PHAsset.fetchAssets(with: .ascendingOptions)
-    }
-
-
     
     @IBAction func selectPhotoAction(_ sender: Any) {
+        let picker = ImagePickerController()
+        presentImagePicker(picker, select: { (asset: PHAsset) -> Void in
+        }, deselect: { (asset: PHAsset) -> Void in
+            // User deselects an asset.
+        }, cancel: { (assets: [PHAsset]) -> Void in
+            // User cancelled selection.
+        }, finish: { (assets: [PHAsset]) -> Void in
+            // User finishes selection.
+            for asset in assets {
+                self.selectedAssets.append(asset)
+            }
+            self.convertAssetToImages()
+        })
         
-        if self.imagePickerController != nil {
-            self.imagePickerController?.delegate = nil
-            self.imagePickerController = nil
-        }
-        
-        self.imagePickerController = UIImagePickerController.init()
-        
-        let alert = UIAlertController.init(title: "Select Source", message: nil, preferredStyle: .actionSheet)
-        
-        if UIImagePickerController.isSourceTypeAvailable((.camera)) {
-            alert.addAction(UIAlertAction.init(title: "Camera", style: .default, handler: {(_) in
-                self.presentImagePicker(controller: self.imagePickerController!, source: .camera)
-            }))
-        }
-
-        if UIImagePickerController.isSourceTypeAvailable((.photoLibrary)) {
-            alert.addAction(UIAlertAction.init(title: "Photo Library", style: .default, handler: {(_) in
-                self.presentImagePicker(controller: self.imagePickerController!, source: .photoLibrary)
-            }))
-        }
-        
-        if UIImagePickerController.isSourceTypeAvailable((.savedPhotosAlbum)) {
-            alert.addAction(UIAlertAction.init(title: "Saved Albums", style: .default, handler: {(_) in
-                self.presentImagePicker(controller: self.imagePickerController!, source: .savedPhotosAlbum)
-            }))
-        }
-        
-        alert.addAction(UIAlertAction.init(title: "Cancel", style: .cancel))
-        
-        self.present(alert, animated: true)
+        viewMetaData()
         
     }
     
-    internal func presentImagePicker(controller: UIImagePickerController, source: UIImagePickerController.SourceType) {
-        controller.delegate = self
-        controller.sourceType = source
-        self.present(controller, animated: true)
+    private func convertAssetToImages() -> Void {
+        if (self.selectedAssets.count != 0) {
+            let manager = PHImageManager.default()
+            let option = PHImageRequestOptions()
+            var thumbnail = UIImage()
+            option.isSynchronous = true
+            
+            for i in 0..<selectedAssets.count {
+                manager.requestImage(for: selectedAssets[i], targetSize: CGSize(width: 200, height: 200), contentMode: .aspectFill, options: option, resultHandler: { (result, info) -> Void in thumbnail = result!
+                })
+                let data = thumbnail.jpegData(compressionQuality: 0.7)
+                let img = UIImage(data: data!)
+                self.photoArray.append(img! as UIImage)
+            }
+            setupScrollView()
+        }
     }
     
-}
-
-
-extension ViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        guard let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage else {
-            return self.imagePickerControllerDidCancel(picker)
+    private func setupScrollView() -> Void {
+        for i in 0..<photoArray.count {
+            let imgView = UIImageView()
+            imgView.image = photoArray[i]
+            let xpos = scrollView.frame.width * CGFloat(i)
+            imgView.frame = CGRect(x: xpos, y:0, width: scrollView.frame.width, height: scrollView.frame.height)
+            imgView.contentMode = .scaleAspectFit
+            
+            scrollView.contentSize.width = scrollView.frame.width * CGFloat(i + 1)
+            scrollView.addSubview(imgView)
+            scrollView.delegate = self
         }
-        
-        self.selectedImage = image
-        
-        self.refUrl = info[UIImagePickerController.InfoKey.referenceURL] as? URL
-        
-        NSLog("Image Url: \(String(describing: refUrl))")
-        
-        picker.dismiss(animated: true) {
-            picker.delegate = nil
-            self.imagePickerController = nil
-        }
-        
     }
     
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        picker.dismiss(animated: true) {
-            picker.delegate = nil
-            self.imagePickerController = nil
+    private func viewMetaData() {
+        metadataTxtView.text = mdDict.description
+        for i in 0..<selectedAssets.count {
+            scrollView.scrollRectToVisible(scrollView.subviews[i].frame, animated: true)
+            metadataTxtView.text = "\(String(describing: selectedAssets[i].creationDate))"
+            metadataTxtView.text += "DONE"
+            sleep(2)
         }
     }
-}
-
-extension PHFetchOptions {
-    static var ascendingOptions: PHFetchOptions = {
-        let option = PHFetchOptions()
-        option.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
-        return option
-    }()
+    
 }
