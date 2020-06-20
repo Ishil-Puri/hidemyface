@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,6 +14,7 @@
 		FCA8ACB02491AC970028EA0F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FCA8ACAE2491AC970028EA0F /* Main.storyboard */; };
 		FCA8ACB22491AC990028EA0F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FCA8ACB12491AC990028EA0F /* Assets.xcassets */; };
 		FCA8ACB52491AC990028EA0F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FCA8ACB32491AC990028EA0F /* LaunchScreen.storyboard */; };
+		FCF2D711249C380E007E8EF3 /* metadataVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCF2D710249C380E007E8EF3 /* metadataVC.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		FCA8ACB12491AC990028EA0F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FCA8ACB42491AC990028EA0F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		FCA8ACB62491AC990028EA0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FCF2D710249C380E007E8EF3 /* metadataVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = metadataVC.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,7 +58,6 @@
 				C21772CA8C2485A0A41F6E5A /* Pods-stopBigBrother.debug.xcconfig */,
 				AE38BAF5422DFCAF2DA50369 /* Pods-stopBigBrother.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -84,6 +85,7 @@
 				FCA8ACA82491AC970028EA0F /* AppDelegate.swift */,
 				FCA8ACAA2491AC970028EA0F /* SceneDelegate.swift */,
 				FCA8ACAC2491AC970028EA0F /* ViewController.swift */,
+				FCF2D710249C380E007E8EF3 /* metadataVC.swift */,
 				FCA8ACAE2491AC970028EA0F /* Main.storyboard */,
 				FCA8ACB12491AC990028EA0F /* Assets.xcassets */,
 				FCA8ACB32491AC990028EA0F /* LaunchScreen.storyboard */,
@@ -208,6 +210,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FCA8ACAD2491AC970028EA0F /* ViewController.swift in Sources */,
+				FCF2D711249C380E007E8EF3 /* metadataVC.swift in Sources */,
 				FCA8ACA92491AC970028EA0F /* AppDelegate.swift in Sources */,
 				FCA8ACAB2491AC970028EA0F /* SceneDelegate.swift in Sources */,
 			);
@@ -362,7 +365,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.puri.stopBigBrother;
+				PRODUCT_BUNDLE_IDENTIFIER = com.stopBigBrother.brotherhood;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -382,7 +385,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.puri.stopBigBrother;
+				PRODUCT_BUNDLE_IDENTIFIER = com.stopBigBrother.brotherhood;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

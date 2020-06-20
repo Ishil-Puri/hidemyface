@@ -2,7 +2,7 @@ PODS:
   - BSImagePicker (3.2.0)
 
 DEPENDENCIES:
-  - BSImagePicker (~> 3.1)
+  - BSImagePicker (~> 3.2)
 
 SPEC REPOS:
   trunk:
@@ -11,6 +11,6 @@ SPEC REPOS:
 SPEC CHECKSUMS:
   BSImagePicker: 1c0d14fa6f1b55380cd49cbebe47584f10e180c6
 
-PODFILE CHECKSUM: 3aeeca9082df2e3bb29a320f81728e36ea1eac24
+PODFILE CHECKSUM: 80a59857a9536adcb424fde54f1bb206872a7d1c
 
 COCOAPODS: 1.9.3

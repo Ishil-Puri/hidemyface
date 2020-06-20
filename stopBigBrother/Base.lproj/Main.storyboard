@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
-    <device id="retina5_5" orientation="portrait" appearance="light"/>
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
@@ -13,76 +13,132 @@
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="stopBigBrother" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="the brotherhood" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NjW-Pk-Jad">
-                                <rect key="frame" x="95" y="39" width="224" height="34"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="the brotherhood" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="NjW-Pk-Jad">
+                                <rect key="frame" x="20" y="20" width="335" height="50"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="34" id="OOT-oe-fuT"/>
+                                    <constraint firstAttribute="height" constant="50" id="m9b-zg-295"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
+                                <fontDescription key="fontDescription" name="Avenir-Medium" family="Avenir" pointSize="28"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oHq-WH-PvG">
-                                <rect key="frame" x="56" y="474" width="302" height="51"/>
-                                <color key="backgroundColor" red="0.0" green="0.47843137250000001" blue="1" alpha="0.25936429789999998" colorSpace="custom" customColorSpace="sRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="51" id="9wN-Gb-QkY"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" name="Avenir-Medium" family="Avenir" pointSize="18"/>
-                                <state key="normal" title="select images to remove metadata"/>
-                                <connections>
-                                    <action selector="selectPhotoAction:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ct4-DC-Pgu"/>
-                                </connections>
-                            </button>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" keyboardDismissMode="onDrag" editable="NO" text="metadata appears here:" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="FIK-Tn-nwL">
-                                <rect key="frame" x="56" y="348" width="302" height="85"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="85" id="8An-z0-HLa"/>
-                                </constraints>
-                                <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                            </textView>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aEv-o0-ReT">
-                                <rect key="frame" x="56" y="124" width="302" height="202"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="302" id="A8m-i2-hH5"/>
-                                    <constraint firstAttribute="height" constant="202" id="yZX-na-QIc"/>
-                                </constraints>
-                                <viewLayoutGuide key="contentLayoutGuide" id="QDb-B9-kfN"/>
-                                <viewLayoutGuide key="frameLayoutGuide" id="I2I-Rn-1e7"/>
-                            </scrollView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="72" translatesAutoresizingMaskIntoConstraints="NO" id="KqA-y1-bo7">
+                                <rect key="frame" x="20" y="90" width="335" height="557"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="fs8-KK-Db4">
+                                        <rect key="frame" x="0.0" y="0.0" width="335" height="313"/>
+                                    </imageView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XvI-ct-z3R">
+                                        <rect key="frame" x="0.0" y="385" width="335" height="50"/>
+                                        <color key="backgroundColor" red="1" green="0.15065817636986301" blue="0.14945419520547945" alpha="0.26000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="xlY-ew-Ucb"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="Avenir-Medium" family="Avenir" pointSize="18"/>
+                                        <state key="normal" title="View Metadata"/>
+                                        <connections>
+                                            <segue destination="Ieb-ew-5BO" kind="popoverPresentation" identifier="metadataVC" popoverAnchorView="XvI-ct-z3R" id="y62-rq-ytv">
+                                                <popoverArrowDirection key="popoverArrowDirection" up="YES" down="YES" left="YES" right="YES"/>
+                                            </segue>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oHq-WH-PvG">
+                                        <rect key="frame" x="0.0" y="507" width="335" height="50"/>
+                                        <color key="backgroundColor" red="0.0" green="0.47843137250000001" blue="1" alpha="0.25936429789999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="ISa-US-4Aw"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="Avenir-Medium" family="Avenir" pointSize="18"/>
+                                        <state key="normal" title="select images to remove metadata"/>
+                                        <connections>
+                                            <action selector="selectPhotoAction:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ct4-DC-Pgu"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
                         </subviews>
                         <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="aEv-o0-ReT" firstAttribute="top" secondItem="NjW-Pk-Jad" secondAttribute="bottom" constant="51" id="2gf-Am-UCK"/>
-                            <constraint firstItem="FIK-Tn-nwL" firstAttribute="trailing" secondItem="oHq-WH-PvG" secondAttribute="trailing" id="DN9-Ss-K90"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="oHq-WH-PvG" secondAttribute="bottom" constant="211" id="JQG-I9-i81"/>
-                            <constraint firstItem="aEv-o0-ReT" firstAttribute="leading" secondItem="FIK-Tn-nwL" secondAttribute="leading" id="MPH-9d-T20"/>
-                            <constraint firstItem="FIK-Tn-nwL" firstAttribute="top" secondItem="aEv-o0-ReT" secondAttribute="bottom" constant="22" id="RWX-KQ-4fb"/>
-                            <constraint firstItem="NjW-Pk-Jad" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="39" id="WKq-vz-yNX"/>
-                            <constraint firstItem="aEv-o0-ReT" firstAttribute="trailing" secondItem="FIK-Tn-nwL" secondAttribute="trailing" id="Zdk-1y-R9g"/>
-                            <constraint firstItem="oHq-WH-PvG" firstAttribute="top" secondItem="FIK-Tn-nwL" secondAttribute="bottom" constant="41" id="bR2-fb-hY2"/>
-                            <constraint firstItem="NjW-Pk-Jad" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="d63-p9-QRM"/>
-                            <constraint firstItem="NjW-Pk-Jad" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="95" id="jOM-rY-Nea"/>
-                            <constraint firstItem="aEv-o0-ReT" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="56" id="kv6-Ll-csh"/>
-                            <constraint firstItem="aEv-o0-ReT" firstAttribute="centerX" secondItem="NjW-Pk-Jad" secondAttribute="centerX" id="q8X-hD-ywj"/>
-                            <constraint firstItem="FIK-Tn-nwL" firstAttribute="leading" secondItem="oHq-WH-PvG" secondAttribute="leading" id="xY1-li-JbT"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="KqA-y1-bo7" secondAttribute="bottom" constant="20" id="5FX-Vo-q0V"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="NjW-Pk-Jad" secondAttribute="trailing" constant="20" id="O2h-Li-zqq"/>
+                            <constraint firstItem="NjW-Pk-Jad" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="RSu-tp-0X4"/>
+                            <constraint firstItem="KqA-y1-bo7" firstAttribute="top" secondItem="NjW-Pk-Jad" secondAttribute="bottom" constant="20" id="hcc-jq-crd"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="KqA-y1-bo7" secondAttribute="trailing" constant="20" id="jGQ-xU-tWI"/>
+                            <constraint firstItem="KqA-y1-bo7" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="sjX-cu-rtL"/>
+                            <constraint firstItem="NjW-Pk-Jad" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="20" id="wUc-eM-UZG"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="imgView" destination="fs8-KK-Db4" id="Y6l-u4-QpK"/>
                         <outlet property="metadataTxtView" destination="FIK-Tn-nwL" id="m8x-gJ-izV"/>
-                        <outlet property="scrollView" destination="aEv-o0-ReT" id="3Id-3N-InA"/>
                         <outlet property="selectImgBtn" destination="oHq-WH-PvG" id="Wfn-3M-XyV"/>
+                        <outlet property="viewMetadataBtn" destination="XvI-ct-z3R" id="4br-l5-9Az"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="137.68115942028987" y="138.58695652173915"/>
+            <point key="canvasLocation" x="135.19999999999999" y="137.18140929535232"/>
+        </scene>
+        <!--MetadataVC-->
+        <scene sceneID="ehD-3W-zIV">
+            <objects>
+                <viewController id="Ieb-ew-5BO" customClass="metadataVC" customModule="stopBigBrother" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="cwq-xV-Lfu">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="ZQc-2z-nkH">
+                                <rect key="frame" x="10" y="50" width="355" height="587"/>
+                                <subviews>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" keyboardDismissMode="onDrag" editable="NO" text="metadata appears here:" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="FIK-Tn-nwL">
+                                        <rect key="frame" x="0.0" y="0.0" width="355" height="587"/>
+                                        <color key="backgroundColor" systemColor="systemGray6Color" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
+                                        <fontDescription key="fontDescription" name="Avenir-Medium" family="Avenir" pointSize="17"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                    </textView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="FIK-Tn-nwL" firstAttribute="top" secondItem="ZQc-2z-nkH" secondAttribute="top" id="Z6I-DH-IQs"/>
+                                </constraints>
+                            </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Uo5-8k-chN">
+                                <rect key="frame" x="279" y="12" width="80" height="30"/>
+                                <color key="backgroundColor" red="0.0" green="0.47843137250000001" blue="1" alpha="0.25936429789999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="80" id="2vO-dp-PUB"/>
+                                    <constraint firstAttribute="height" constant="30" id="beF-Lx-Dc1"/>
+                                </constraints>
+                                <state key="normal" title="Dismiss"/>
+                                <connections>
+                                    <segue destination="Sni-ym-tFE" kind="unwind" unwindAction="unwindToMain:" id="zNp-eC-Br9"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="ZQc-2z-nkH" firstAttribute="top" secondItem="gnX-dK-Ynz" secondAttribute="top" constant="50" id="AwG-Tn-iUw"/>
+                            <constraint firstItem="Uo5-8k-chN" firstAttribute="top" secondItem="gnX-dK-Ynz" secondAttribute="top" constant="12" id="EA5-Lr-Lwy"/>
+                            <constraint firstItem="ZQc-2z-nkH" firstAttribute="leading" secondItem="gnX-dK-Ynz" secondAttribute="leading" constant="10" id="FuL-S4-5Gy"/>
+                            <constraint firstItem="ZQc-2z-nkH" firstAttribute="trailing" secondItem="gnX-dK-Ynz" secondAttribute="trailing" constant="-10" id="HW8-vT-VKV"/>
+                            <constraint firstItem="Uo5-8k-chN" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="gnX-dK-Ynz" secondAttribute="leading" symbolic="YES" id="aVA-iZ-N3O"/>
+                            <constraint firstItem="gnX-dK-Ynz" firstAttribute="bottom" secondItem="ZQc-2z-nkH" secondAttribute="bottom" constant="10" id="gPt-j9-CCs"/>
+                            <constraint firstItem="Uo5-8k-chN" firstAttribute="trailing" secondItem="cwq-xV-Lfu" secondAttribute="trailingMargin" id="xl0-E4-M1S"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="gnX-dK-Ynz"/>
+                    </view>
+                    <connections>
+                        <outlet property="dismissBtn" destination="Uo5-8k-chN" id="NM5-tb-3fR"/>
+                        <outlet property="metadataTxtView" destination="FIK-Tn-nwL" id="haL-YG-tgv"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="1wC-IX-vA2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <exit id="Sni-ym-tFE" userLabel="Exit" sceneMemberID="exit"/>
+            </objects>
+            <point key="canvasLocation" x="1020" y="137"/>
         </scene>
     </scenes>
 </document>

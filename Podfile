@@ -6,6 +6,6 @@ target 'stopBigBrother' do
   use_frameworks!
 
   # Pods for stopBigBrother
-  pod "BSImagePicker", "~> 3.1"
+  pod "BSImagePicker", "~> 3.2"
 
 end
