@@ -19,19 +19,21 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var imgView: UIImageView!
     
-    @IBOutlet weak var stackView: UIStackView!
+    @IBOutlet weak var settingsBtn: UIButton!
     
     var selectedAssets = [PHAsset]()
     var photoArray = [UIImage]()
-    var mdDict: Dictionary<String, Any> = [:]
     var metadataTemp: String = ""
+    var mdDict: Dictionary<String, Any> = Dictionary()
     
-    // Layer into which to draw bounding box paths.
-    var pathLayer: CALayer?
+    // MARK - Settings
+    var shouldBlurFaces = true
+    var shouldDeleteLocation = true
+    var saveAsCopy = true
    
     // Image parameters for reuse throughout app
-    var imageWidth: CGFloat = 0
-    var imageHeight: CGFloat = 0
+//    var imageWidth: CGFloat = 0
+//    var imageHeight: CGFloat = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -39,6 +41,7 @@ class ViewController: UIViewController {
         selectImgBtn.titleLabel?.adjustsFontSizeToFitWidth = true
         viewMetadataBtn.layer.cornerRadius = 15
         viewMetadataBtn.isHidden = true
+        settingsBtn.layer.cornerRadius = 10
     }
     
     @IBAction func selectPhotoAction(_ sender: Any) {
@@ -57,45 +60,159 @@ class ViewController: UIViewController {
                 self.selectedAssets.append(asset)
             }
             self.convertAssetToImages(prevSize:prevSize)
+            self.displayMetaData()
+            self.viewMetadataBtn.isHidden = false
         })
-        viewMetadataBtn.isHidden = false
     }
     
     private func convertAssetToImages(prevSize: Int) -> Void {
         if (self.selectedAssets.count != 0) {
             let manager = PHImageManager.default()
             let option = PHImageRequestOptions()
-            var thumbnail = UIImage()
+            var img = UIImage()
+            
+            let timer: Timer = Timer()
+            timer.fire()
+            
             option.isSynchronous = true
-            for i in prevSize..<selectedAssets.count {
-                manager.requestImage(for: selectedAssets[i], targetSize: CGSize(width: 200, height: 200), contentMode: .aspectFill, options: option, resultHandler: { (result, info) -> Void in thumbnail = result!
-                })
-                let data = thumbnail.jpegData(compressionQuality: 0.7)
-                let img = UIImage(data: data!)
-                self.photoArray.append(img! as UIImage)
+            option.isNetworkAccessAllowed = true
+            
+            option.progressHandler = { (progress, error, stop, info) in
+                print("progress: \(progress)")
             }
-            displayMetaData()
-//            setupScrollView(prevSize:prevSize)
+            
+            for i in prevSize..<selectedAssets.count {
+                timer.fire()
+                manager.requestImage(for: selectedAssets[i], targetSize: PHImageManagerMaximumSize, contentMode: .aspectFill, options: option, resultHandler: { (result, info) in
+                    img = result!
+                    if(timer.timeInterval>10) {
+                        self.showAlertWith(title: "Hmm", message: "This is taking longer than usual. This might be due to a slow network connection while downloading your selected photos from iCloud. You can continue to wait or manually quit the app to select a different photo.")
+                    }
+                    print("image #: \(String(describing: i))")
+                    print("dict: \(String(describing: info))")
+                })
+                let data = img.jpegData(compressionQuality: 0.7)
+                let compressedImg = UIImage(data: data!)
+                self.photoArray.append(compressedImg! as UIImage)
+                
+//                processImage(originalImg: photoArray[i])
+            }
+            timer.invalidate()
         }
     }
     
-
+    private func processImage(i: Int) {
+        let originalImg: UIImage = photoArray[i]
+        let originalAsset: PHAsset = selectedAssets[i]
+        
+        // Check settings
+        
+        if (shouldBlurFaces) {
+            // process occurs per image
+            let sequenceHandler = VNSequenceRequestHandler()
+            let detectFaceRequest = VNDetectFaceRectanglesRequest(completionHandler: detectedFace)
+            do {
+                try sequenceHandler.perform([detectFaceRequest], on: originalImg.cgImage!, orientation: CGImagePropertyOrientation(originalImg.imageOrientation))
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
+        
+        if (!shouldDeleteLocation) {
+            // Get last image saved and add location from original data to new image
+            let fetchOptions = PHFetchOptions()
+            fetchOptions.sortDescriptors = [NSSortDescriptor(key:"creationDate", ascending: false)]
+            fetchOptions.fetchLimit = 1
+            let fetchResult: PHFetchResult = PHAsset.fetchAssets(with: PHAssetMediaType.image, options: fetchOptions)
+            
+            if fetchResult.count > 0 {
+                setLocationMetadata(asset: fetchResult[0], location: originalAsset.location)
+            } else {
+                print("Couldn't find latest photo asset")
+            }
+        }
+        
+        // MARK - Adjust metadata as necessary
+        
+    }
+    
+    private func detectedFace(request: VNRequest, error: Error?) {
+        print("Woot, we've arrived at the completion handler")
+        guard let results = request.results as? [VNFaceObservation]
+            else {
+                // TODO: Create advanced error handling, show a report of images unable to be processed
+                print("Encountered error when retrieving results array")
+                return
+        }
+        DispatchQueue.main.async {
+            print("Woot, we are now drawing bounding boxes around \(results.count) faces")
+            self.draw(faces: results)
+            self.imgView.setNeedsDisplay()
+        }
+    }
+    
+    private func draw(faces: [VNFaceObservation]) {
+        let latestIndex: Int = self.photoArray.count - 1
+        var faceBoxes: [CGRect] = [CGRect.zero]
+        
+        UIGraphicsBeginImageContext(self.photoArray[latestIndex].size)
+        self.photoArray[latestIndex].draw(at: CGPoint.zero)
+        let context = UIGraphicsGetCurrentContext()!
+        context.setLineWidth(4.0)
+        context.setStrokeColor(UIColor.red.cgColor)
+        
+        faces.forEach{ face in
+            faceBoxes.append(face.boundingBox.applying(CGAffineTransform(scaleX: CGFloat(context.width), y: CGFloat(context.height))))
+        }
+        
+        context.addRects(faceBoxes)
+        
+        context.strokePath()
+        guard let annotatedImage = UIGraphicsGetImageFromCurrentImageContext() else {
+            print("Unable to grab annotated image.")
+            return
+        }
+        
+        UIGraphicsEndImageContext()
+        
+        self.imgView.image = annotatedImage
+        
+        self.saveImage(image: annotatedImage)
+    }
+    
+    
+    private func saveImage(image: UIImage) {
+        UIImageWriteToSavedPhotosAlbum(image, self, #selector(self.image(_:didFinishSavingWithError:contextInfo:)), nil)
+    }
+    
+    @objc func image(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
+        if let error = error {
+            // Error when saving
+            showAlertWith(title: "Save error", message: error.localizedDescription)
+            
+        } else {
+            showAlertWith(title: "Saved!", message: "Your image has been secured and saved as a copy to your photos.")
+        }
+    }
+    
+    func showAlertWith(title: String, message: String) {
+        let ac = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "OK", style: .default))
+        present(ac, animated: true)
+    }
     
     private func displayMetaData() {
-        for i in 0..<selectedAssets.count {
-            faceDetection(image: photoArray[i])
-            imgView.image = photoArray[i]
-            metadataTemp = getMetadata(asset: selectedAssets[i])
-//            deleteMetadata()
-        }
+        // FIXME - only uses last asset
+        metadataTemp = getMetadata(asset: selectedAssets[selectedAssets.count - 1])
+//        for i in 0..<selectedAssets.count {
+//            imgView.image = photoArray[i]
+//        }
     }
     
-    private func deleteMetadata() {
+    private func setLocationMetadata(asset: PHAsset, location: CLLocation?) {
         PHPhotoLibrary.shared().performChanges({
-            for i in 0..<self.selectedAssets.count {
-                PHAssetChangeRequest(for: self.selectedAssets[i]).setValue(nil, forKey: "location")
-//                PHAssetChangeRequest(for: self.selectedAssets[i]).setValue(Date.init(timeIntervalSinceNow: 0), forKey: "creationDate")
-            }
+            PHAssetChangeRequest(for: asset).setValue(location, forKey: "location")
+//                PHAssetChangeRequest(for: self.selectedAssets[i]).setValue(Date.init(timeIntervalSinceNow: 0), forKey: "creationDate") # adjusts creation date
         }, completionHandler: { (success, error) in
             if success {
             } else {
@@ -103,50 +220,7 @@ class ViewController: UIViewController {
             }
         })
     }
-    func show(_ image: UIImage) {
-        
-        // Remove previous paths & image
-        pathLayer?.removeFromSuperlayer()
-        pathLayer = nil
-        imgView.image = nil
-        
-        // Account for image orientation by transforming view.
-        let correctedImage = scaleAndOrient(image: image)
-        
-        // Place photo inside imgView.
-        imgView.image = correctedImage
-        
-        // Transform image to fit screen.
-        guard let cgImage = correctedImage.cgImage else {
-            print("Trying to show an image not backed by CGImage!")
-            return
-        }
-        
-        let fullImageWidth = CGFloat(cgImage.width)
-        let fullImageHeight = CGFloat(cgImage.height)
-        
-        let imageFrame = imgView.frame
-        let widthRatio = fullImageWidth / imageFrame.width
-        let heightRatio = fullImageHeight / imageFrame.height
-        
-        // ScaleAspectFit: The image will be scaled down according to the stricter dimension.
-        let scaleDownRatio = max(widthRatio, heightRatio)
-        
-        // Cache image dimensions to reference when drawing CALayer paths.
-        imageWidth = fullImageWidth / scaleDownRatio
-        imageHeight = fullImageHeight / scaleDownRatio
-        
-        // Prepare pathLayer to hold Vision results.
-        let xLayer = (imageFrame.width - imageWidth)
-        let yLayer = (imageFrame.height - imageHeight + 90)
-        let drawingLayer = CALayer()
-        drawingLayer.bounds = CGRect(x: xLayer, y: yLayer, width: imageWidth, height: imageHeight)
-        drawingLayer.anchorPoint = CGPoint.zero
-        drawingLayer.position = CGPoint(x: xLayer, y: yLayer)
-        drawingLayer.opacity = 0.5
-        pathLayer = drawingLayer
-        self.view.layer.addSublayer(pathLayer!)
-    }
+    
     
     private func getMetadata(asset: PHAsset) -> String{
         let mediaType = "\(asset.mediaType)"
@@ -161,201 +235,37 @@ class ViewController: UIViewController {
         let modificationDate = asset.modificationDate
         != nil ? " \(asset.modificationDate!)" : "No modification date info found :("
         
+        mdDict["location"] = asset.location
+        mdDict["creation date"] = asset.creationDate
+        
         return "Media Type: \(mediaType)\nMedia Subtype: \(mediaSubtypes)\nCreation Date: \(date)\nSource Type: \(sourceType)\nLocation: \(location)\nDimensions: \(dimensions)\nLast Modified: \(modificationDate)"
     }
     
     
-    private func faceDetection(image: UIImage) {
-        // Send vision request with chosen photo.
-        guard let cgImage = image.cgImage else {
-            print("UIImage has no CGImage backing it!")
-            return
-        }
-        show(image)
-        
-        let orientation = CGImagePropertyOrientation(image.imageOrientation)
-        performVisionRequest(image: cgImage, orientation: orientation)
-    }
-    
-    fileprivate func handleDetectedFaces(request: VNRequest?, error: Error?) {
-        if let nsError = error as NSError? {
-            self.presentAlert("Face Detection Error", error: nsError)
-            return
-        }
-        // Perform frawing on main thread.
-        DispatchQueue.main.async {
-            guard let drawLayer = self.pathLayer, let results = request?.results as? [VNFaceObservation] else {
-                return
-            }
-            self.draw(faces: results, onImageWithBounds: drawLayer.bounds)
-            drawLayer.setNeedsDisplay()
-        }
-    }
-    
-    fileprivate func performVisionRequest(image: CGImage, orientation: CGImagePropertyOrientation) {
-        
-        let requests = createVisionRequests()
-        
-        let imageRequestHandler = VNImageRequestHandler(cgImage: image, orientation: orientation, options: [:])
-        // Send the requests to request handler
-        DispatchQueue.global(qos: .userInitiated).async {
-            do{
-                try imageRequestHandler.perform(requests)
-            } catch let error as NSError {
-                print("Failed to perform image request: \(error)")
-                self.presentAlert("Image Request Failed", error: error)
-                return
-            }
-        }
-    }
-    
-    /// - Tag: CreateRequests
-    fileprivate func createVisionRequests() -> [VNRequest] {
-        
-        // Create an array to collect all desired requests.
-        var requests: [VNRequest] = []
-        // Break rectangle & face landmark detection into 2 stages to have more fluid feedback in UI.
-        requests.append(self.faceDetectionRequest)
-//        requests.append(self.faceLandmarkRequest)
-        
-        // Return grouped requests as a single array.
-        return requests
-    }
-    
-    lazy var faceDetectionRequest = VNDetectFaceRectanglesRequest(completionHandler: self.handleDetectedFaces)
-    
-    // Mark - Helper Functions
-    
-    fileprivate func draw(faces: [VNFaceObservation], onImageWithBounds bounds: CGRect) {
-        CATransaction.begin()
-        for observation in faces {
-            let faceBox = boundingBox(forRegionOfInterest: observation.boundingBox, withinImageBounds: bounds)
-            let faceLayer = shapeLayer(color: .yellow, frame: faceBox)
-            
-            // Add to pathLayer on top of image.
-            pathLayer?.addSublayer(faceLayer)
-        }
-        CATransaction.commit()
-    }
-    
-    fileprivate func shapeLayer(color: UIColor, frame: CGRect) -> CAShapeLayer{
-        // Create new layer.
-        let layer = CAShapeLayer()
-        
-        // Config. layer appearance.
-        layer.fillColor = nil // No fill
-        layer.shadowOpacity = 0
-        layer.shadowRadius = 0
-        layer.borderWidth = 2
-        
-        // Set line color based on parameter.
-        layer.borderColor = color.cgColor
-        
-        // Locate layer.
-        layer.anchorPoint = .zero
-        layer.frame = frame
-        layer.masksToBounds = true
-        
-        // Transform layer to same coordinate system as imgView underneath it
-        layer.transform = CATransform3DMakeScale(-1, -1, 1)
-        
-        return layer
-    }
-    
-    fileprivate func boundingBox(forRegionOfInterest: CGRect, withinImageBounds bounds: CGRect) -> CGRect {
-        
-        let imageWidth = bounds.width
-        let imageHeight = bounds.height
-        
-        // Begin with input rect.
-        var rect = forRegionOfInterest
-        
-        // Repositioning origin.
-        rect.origin.x *= imageWidth
-        rect.origin.x += bounds.origin.x
-        rect.origin.y = (1 - rect.origin.y) * imageHeight + bounds.origin.y
-        
-        // Rescale rect with new basis
-        rect.size.width *= imageWidth
-        rect.size.height *= imageHeight
-        
-        return rect
-    }
-
-    func presentAlert(_ title: String, error: NSError) {
-        // Always present alert on main thread.
-        DispatchQueue.main.async {
-            let alertController = UIAlertController(title: title,
-                                                    message: error.localizedDescription,
-                                                    preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK",
-                                         style: .default) { _ in
-                                            // Do nothing -- simply dismiss alert.
-            }
-            alertController.addAction(okAction)
-            self.present(alertController, animated: true, completion: nil)
-        }
-    }
-    
-    
-    func scaleAndOrient(image: UIImage) -> UIImage {
-        
-        // Set a default value for limiting image size.
-        let maxResolution: CGFloat = 640
-        
-        guard let cgImage = image.cgImage else {
-            print("UIImage has no CGImage backing it!")
-            return image
-        }
-        
-        // Compute parameters for transform.
-        let width = CGFloat(cgImage.width)
-        let height = CGFloat(cgImage.height)
-//        var transform = CGAffineTransform.identity
-        
-        var bounds = CGRect(x: 0, y: 0, width: width, height: height)
-        
-        if width > maxResolution ||
-            height > maxResolution {
-            let ratio = width / height
-            if width > height {
-                bounds.size.width = maxResolution
-                bounds.size.height = round(maxResolution / ratio)
-            } else {
-                bounds.size.width = round(maxResolution * ratio)
-                bounds.size.height = maxResolution
-            }
-        }
-        
-        let scaleRatio = bounds.size.width / width
-        let orientation = CGImagePropertyOrientation(image.imageOrientation)
-        
-        return UIGraphicsImageRenderer(size: bounds.size).image { rendererContext in
-            let context = rendererContext.cgContext
-            
-            if orientation == .right || orientation == .left {
-                context.scaleBy(x: -scaleRatio, y: scaleRatio)
-                context.translateBy(x: -height, y: 0)
-            } else {
-                context.scaleBy(x: scaleRatio, y: -scaleRatio)
-                context.translateBy(x: 0, y: -height)
-            }
-//            context.concatenate(transform)
-            context.draw(cgImage, in: CGRect(x: imgView.frame.minX, y: imgView.frame.minY, width: width, height: height))
-        }
-    }
     
     @IBAction func unwindToMain(_ unwindSegue: UIStoryboardSegue) {
-        let sourceViewController = unwindSegue.source
+        let sender = unwindSegue.source
+        if sender is settingsVC {
+            if let senderVC = sender as? settingsVC {
+                shouldDeleteLocation = senderVC.deleteLocationSwitch.isOn
+                shouldBlurFaces = senderVC.blurFacesSwitch.isOn
+                saveAsCopy = senderVC.saveAsCopySwitch.isOn
+            }
+        }
         // Use data from the view controller which initiated the unwind segue
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        print(segue.identifier!)
+        print("Time to segue with: '\(segue.identifier!)'")
         if segue.identifier == "metadataVC" {
-            print("Visited")
             let vc = segue.destination as! metadataVC
             vc.receiveMD = metadataTemp
+            vc.location = mdDict["location"] as? CLLocation
+        } else if segue.identifier == "settingsVC" {
+            let vc = segue.destination as! settingsVC
+            vc.segueSettings["delete"] = shouldDeleteLocation
+            vc.segueSettings["blur"] =  shouldBlurFaces
+            vc.segueSettings["save"] = saveAsCopy
         }
     }
     
@@ -388,6 +298,8 @@ extension CGImagePropertyOrientation {
             case .leftMirrored: self = .leftMirrored
             case .right: self = .right
             case .rightMirrored: self = .rightMirrored
+        @unknown default:
+            fatalError("[-] Encountered unknown orientation.")
         }
     }
 }
