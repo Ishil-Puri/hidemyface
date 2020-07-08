@@ -16,23 +16,24 @@ class metadataVC: UIViewController {
     @IBOutlet weak var dismissBtn: UIButton!
     @IBOutlet weak var mapView: MKMapView!
     
-    var receiveMD: String = String()
-    var location: CLLocation?
+    var receiveMD: Dictionary<String, Any> = [:]
     
     override func viewDidLoad() {
         dismissBtn.layer.cornerRadius = 15
-        metadataTxtView.text = receiveMD
+        metadataTxtView.text = ppMetadata(dict: receiveMD)
+        metadataTxtView.layer.cornerRadius = 15
         mapView.layer.cornerRadius = 15
         configureMap()
     }
     
     fileprivate func configureMap() {
+        let location = receiveMD["location"] as? CLLocation
         let point = MKPointAnnotation()
         let geoCoder = CLGeocoder()
         var placeMark: CLPlacemark!
         
         if location != nil {
-            
+
             var address = ""
             
             geoCoder.reverseGeocodeLocation(location!, completionHandler: { (placemarks, error) -> Void in
@@ -56,7 +57,7 @@ class metadataVC: UIViewController {
                     }
                 }
                 
-                point.coordinate = self.location!.coordinate
+                point.coordinate = location!.coordinate
                 point.title = address != "" ? address : "Image location found"
                 self.mapView.addAnnotation(point)
                 self.mapView.setCenter(point.coordinate, animated: true)
@@ -67,11 +68,29 @@ class metadataVC: UIViewController {
             let mkViewRect = mapView.bounds
             let overlay = UIView(frame: mkViewRect)
             overlay.backgroundColor = UIColor.black.withAlphaComponent(0.7)
-            let message = UILabel(frame: CGRect(x: 0, y: 0, width: 210, height: 50))
+            let message = UILabel(frame: CGRect(x: 0, y: 0, width: 205, height: 50))
+            message.textColor = UIColor.white
             message.text = "No location data available."
             message.center = CGPoint(x: overlay.bounds.width/2, y: overlay.bounds.height/2)
             overlay.addSubview(message)
             mapView.addSubview(overlay)
         }
     }
+    
+    fileprivate func ppMetadata(dict: Dictionary<String, Any>) -> String {
+        let mediaType = "\(dict["mediaType"] ?? "no media type")"
+        let date = dict["creationDate"]
+            != nil ? " \(dict["creationDate"]!)" : "No date info found :("
+        let mediaSubtypes = "\(dict["mediaSubtypes"] ?? "no subtype")"
+        let sourceType = dict["sourceType"] ?? "no source type"
+        let location = dict["location"] != nil ? " \(dict["location"]!)" : "No Location info found :("
+//        let isFavorite = asset.isFavorite
+//        let isHidden = asset.isHidden
+        let dimensions = "\(dict["pixelWidth"] ?? 0)x\(dict["pixelHeight"] ?? 0)"
+        let modificationDate = dict["modificationDate"]
+        != nil ? " \(dict["modificationDate"]!)" : "No modification date info found :("
+        
+        return "Media Type: \(mediaType)\nMedia Subtype: \(mediaSubtypes)\nCreation Date: \(date)\nSource Type: \(sourceType)\nLocation: \(location)\nDimensions: \(dimensions)\nLast Modified: \(modificationDate)"
+    }
+    
 }
