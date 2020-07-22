@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		C281EAE19F2850EB916AE2C5 /* Pods_stopBigBrother.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9E14278591AC9044250DBD0 /* Pods_stopBigBrother.framework */; };
 		FC0AEC6424A94A7E005036DF /* settingsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC0AEC6324A94A7E005036DF /* settingsVC.swift */; };
+		FC2DB40624C3D7270017ECF1 /* SpinnerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2DB40524C3D7270017ECF1 /* SpinnerViewController.swift */; };
 		FC57C82624B1903300B26B12 /* CollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC57C82524B1903300B26B12 /* CollectionViewCell.swift */; };
 		FCA8ACA92491AC970028EA0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCA8ACA82491AC970028EA0F /* AppDelegate.swift */; };
 		FCA8ACAB2491AC970028EA0F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCA8ACAA2491AC970028EA0F /* SceneDelegate.swift */; };
@@ -24,6 +25,7 @@
 		C21772CA8C2485A0A41F6E5A /* Pods-stopBigBrother.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-stopBigBrother.debug.xcconfig"; path = "Target Support Files/Pods-stopBigBrother/Pods-stopBigBrother.debug.xcconfig"; sourceTree = "<group>"; };
 		E9E14278591AC9044250DBD0 /* Pods_stopBigBrother.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_stopBigBrother.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FC0AEC6324A94A7E005036DF /* settingsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = settingsVC.swift; sourceTree = "<group>"; };
+		FC2DB40524C3D7270017ECF1 /* SpinnerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpinnerViewController.swift; sourceTree = "<group>"; };
 		FC57C82524B1903300B26B12 /* CollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewCell.swift; sourceTree = "<group>"; };
 		FCA8ACA52491AC970028EA0F /* stopBigBrother.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = stopBigBrother.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FCA8ACA82491AC970028EA0F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -93,6 +95,7 @@
 				FCF2D710249C380E007E8EF3 /* metadataVC.swift */,
 				FC0AEC6324A94A7E005036DF /* settingsVC.swift */,
 				FCA8ACAE2491AC970028EA0F /* Main.storyboard */,
+				FC2DB40524C3D7270017ECF1 /* SpinnerViewController.swift */,
 				FCA8ACB12491AC990028EA0F /* Assets.xcassets */,
 				FCA8ACB32491AC990028EA0F /* LaunchScreen.storyboard */,
 				FCA8ACB62491AC990028EA0F /* Info.plist */,
@@ -220,6 +223,7 @@
 				FC57C82624B1903300B26B12 /* CollectionViewCell.swift in Sources */,
 				FCA8ACA92491AC970028EA0F /* AppDelegate.swift in Sources */,
 				FCA8ACAB2491AC970028EA0F /* SceneDelegate.swift in Sources */,
+				FC2DB40624C3D7270017ECF1 /* SpinnerViewController.swift in Sources */,
 				FC0AEC6424A94A7E005036DF /* settingsVC.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

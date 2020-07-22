@@ -21,12 +21,15 @@ class ViewController: UIViewController{
     
     @IBOutlet weak var settingsBtn: UIButton!
     
-    //MARK - global fields
+    // MARK - global fields
     var selectedAssets = [PHAsset]()
     var metadataArray = [Dictionary<String, Any>]()
+    var imageArray = [UIImage]()
+    var latestDrawingIndex = 0
     
     let thumbManager = PHCachingImageManager()
     let thumbOption = PHImageRequestOptions()
+    var spinner = SpinnerViewController()
     
     // MARK - Segue fields
     var transferMD: Dictionary<String, Any> = Dictionary()
@@ -35,8 +38,6 @@ class ViewController: UIViewController{
     var shouldBlurFaces = true
     var shouldDeleteLocation = true
     var saveAsCopy = true
-    
-    var latestDrawingIndex = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -59,23 +60,24 @@ class ViewController: UIViewController{
     }
     
     override func didReceiveMemoryWarning() {
-        // does not receive memory warning :(
+        // Attempt to recover if encountered memory issue.
+        cleanUp(showMessage: false)
         thumbManager.stopCachingImagesForAllAssets()
         showAlertWith(title: "Error", message: "Images are too large or numerous to be processed. Please try again in smaller batches.")
         fatalError("Exceeded memory usage")
     }
     
     @IBAction func selectPhotoAction(_ sender: Any) {
+        if PHPhotoLibrary.authorizationStatus() == .denied {
+            showAlertWith(title: "Access required...", message: "Please grant access to your photo library in Settings app to continue.")
+            return
+        }
         let picker = ImagePickerController()
-        var count = 0
+        picker.settings.selection.max = 10
         presentImagePicker(picker, select: { (asset: PHAsset) -> Void in
-            count += 1
-            if count == 15 {
-                self.showAlertWith(title: "Limit Reached", message: "Maximum number of selections (15) has been reached")
-            }
+            // User selects an asset.
         }, deselect: { (asset: PHAsset) -> Void in
             // User deselects an asset.
-            count -= 1
         }, cancel: { (assets: [PHAsset]) -> Void in
             // User cancelled selection.
         }, finish: { (assets: [PHAsset]) -> Void in
@@ -88,22 +90,17 @@ class ViewController: UIViewController{
                 }
             }
             self.thumbManager.startCachingImages(for: self.selectedAssets, targetSize: CGSize(width: 200, height: 200), contentMode: .aspectFill, options: self.thumbOption)
-//            self.manager.startCachingImages(for: self.selectedAssets, targetSize: PHImageManagerMaximumSize, contentMode: .aspectFill, options: self.option)
-            
             self.collectionView.reloadData()
             self.processPhotosBtn.setTitle("process \(self.selectedAssets.count) photos", for: .normal)
             self.processPhotosBtn.isHidden = false
         })
     }
     
-    private func fetchFullImage(asset: PHAsset) -> UIImage {
+    private func fetchFullImage(asset: PHAsset) -> Bool {
+        print("Fetching image: \(asset.localIdentifier)")
         var img = UIImage()
-        // MARK - FIXME: Memory issues with this architecture. Will need to find workaround to avoid loading entire image into memory.
-//        let timer: Timer = Timer()
-//        timer.fire()
-//        if(timer.timeInterval>6) {
-//            self.showAlertWith(title: "Hmm", message: "This is taking longer than usual. This might be due to a slow network connection while downloading your selected photos from iCloud. You can continue to wait or manually quit the app to select a different photo.")
-//        }
+        var success = true
+        // MARK - FIXME: Memory issues reduced but present with current architecture (meanwhile, image selection limit is capped).
         let manager = PHImageManager()
         let option = PHImageRequestOptions()
         
@@ -113,22 +110,28 @@ class ViewController: UIViewController{
         option.progressHandler = { (progress, error, stop, info) in
             print("[-] progress: \(progress)")
         }
-
-        manager.requestImage(for: asset, targetSize: PHImageManagerMaximumSize, contentMode: .aspectFill, options: option, resultHandler: { (result, info) in
+        let imgSize = CGSize(width: asset.pixelWidth, height: asset.pixelHeight)
+        let scaleFactor = UIScreen.main.scale
+        let scale = CGAffineTransform(scaleX: 1/scaleFactor, y: 1/scaleFactor)
+        let scaledSize = imgSize.applying(scale)
+        manager.requestImage(for: asset, targetSize: scaledSize, contentMode: .aspectFit, options: option, resultHandler: { (result, info) in
+            if result == nil {
+                success = false
+                return
+            }
             img = result!
-            let data = img.jpegData(compressionQuality: 0.7)
+            let data = img.jpegData(compressionQuality: 0.6)
             img = UIImage(data: data!)!
+            self.imageArray.append(img)
         })
-        return img
+        return success
     }
     
     private func fetchThumbnail(asset: PHAsset) -> UIImage {
         var resultImg: UIImage = UIImage()
-        
         thumbOption.progressHandler = { (progress, error, stop, info) in
             print("[-] Thumbnail progress: \(progress)")
         }
-        
         thumbManager.requestImage(for: asset, targetSize: CGSize(width: 200, height: 200), contentMode: .aspectFill, options: thumbOption, resultHandler: { (result, info) in
             resultImg = result!
             let data = resultImg.jpegData(compressionQuality: 0.7)
@@ -137,18 +140,39 @@ class ViewController: UIViewController{
         return resultImg
     }
     
+    private func downloadImages() -> Bool {
+        var success = true
+        self.selectedAssets.forEach { asset in
+            if !self.fetchFullImage(asset: asset) {
+                let failedIndex = selectedAssets.firstIndex(of: asset)
+                cleanUp(showMessage: false)
+                showAlertWith(title: "Hmm", message: "Unable to download selected image (#\(failedIndex ?? -1)). Please re-select photos to process.")
+                success = false
+                return
+            }
+        }
+        // return download successful boolean?
+        return success
+    }
     
     @IBAction func processPhotosAction(_ sender: Any) {
-        for i in 0...selectedAssets.count-1 {
-            print("[-] Processing #\(i)")
-            processImage(index: i)
+        self.showSpinner()
+        DispatchQueue.global(qos: .background).async {
+            if !self.downloadImages() {
+                return
+            }
+            DispatchQueue.main.async {
+                for i in 0...self.selectedAssets.count-1 {
+                    print("[-] Processing #\(i)")
+                    self.processImage(index: i)
+                }
+            }
         }
     }
     
     private func processImage(index: Int) {
-        let originalImg: UIImage = fetchFullImage(asset: selectedAssets[index])
+        let originalImg: UIImage = imageArray[index]
         self.latestDrawingIndex = index
-        
         let sequenceHandler = VNSequenceRequestHandler()
         let detectFaceRequest = VNDetectFaceRectanglesRequest(completionHandler: detectedFace)
         do {
@@ -168,7 +192,6 @@ class ViewController: UIViewController{
         }
         let capIndex = self.latestDrawingIndex
         DispatchQueue.main.async {
-            
             if !self.shouldBlurFaces {
                 results = []
                 print("Will not blur faces due to settings.")
@@ -183,7 +206,8 @@ class ViewController: UIViewController{
 
     private func draw(faces: [VNFaceObservation], captureCurrIndex: Int) -> UIImage{
         var faceBoxes: [CGRect] = []
-        let image = fetchFullImage(asset: selectedAssets[captureCurrIndex])
+        let image = imageArray[captureCurrIndex]
+        imageArray[captureCurrIndex] = UIImage()
         print("[-] index: \(captureCurrIndex)")
         
         let renderedImage = UIGraphicsImageRenderer(size: image.size).image { (rendererContext) in
@@ -211,17 +235,23 @@ class ViewController: UIViewController{
                     print("Error creating asset: \(String(describing: error))")
                 }
                 if index == self.selectedAssets.count - 1 {
-                    self.finished()
+                    self.cleanUp(showMessage: true)
                 }
             })
+        } else {
+            // MARK – implement later: save as changes to original image
         }
     }
     
-    private func finished() {
+    private func cleanUp(showMessage: Bool) {
         // Clean up + choose how to display finished process message
-        self.showAlertWith(title: "\(selectedAssets.count) Saved", message: "\(selectedAssets.count) images processed and saved!")
+        removeSpinner()
+        if showMessage {
+            self.showAlertWith(title: "\(selectedAssets.count) Saved", message: "\(selectedAssets.count) images processed and saved!")
+        }
         selectedAssets.removeAll()
         metadataArray.removeAll()
+        imageArray.removeAll()
         DispatchQueue.main.async {
             self.collectionView.reloadData()
             self.processPhotosBtn.isHidden = true
@@ -290,6 +320,27 @@ class ViewController: UIViewController{
         collectionView.setCollectionViewLayout(layout, animated: true)
         
         collectionView.reloadData()
+    }
+    
+    func showSpinner() {
+        DispatchQueue.main.async {
+            print("[-] Load spinner")
+            self.addChild(self.spinner)
+            self.spinner.view.frame = self.view.frame
+            self.view.addSubview(self.spinner.view)
+            self.spinner.didMove(toParent: self)
+            self.view.setNeedsDisplay()
+        }
+    }
+    
+    
+    func removeSpinner() {
+        print("[-] Remove spinner")
+        DispatchQueue.main.async {
+            self.spinner.willMove(toParent: nil)
+            self.spinner.view.removeFromSuperview()
+            self.spinner.removeFromParent()
+        }
     }
     
 }
