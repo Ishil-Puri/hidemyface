@@ -27,7 +27,7 @@
 		FC0AEC6324A94A7E005036DF /* settingsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = settingsVC.swift; sourceTree = "<group>"; };
 		FC2DB40524C3D7270017ECF1 /* SpinnerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpinnerViewController.swift; sourceTree = "<group>"; };
 		FC57C82524B1903300B26B12 /* CollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewCell.swift; sourceTree = "<group>"; };
-		FCA8ACA52491AC970028EA0F /* stopBigBrother.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = stopBigBrother.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FCA8ACA52491AC970028EA0F /* Hide My Face.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Hide My Face.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FCA8ACA82491AC970028EA0F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FCA8ACAA2491AC970028EA0F /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		FCA8ACAC2491AC970028EA0F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -80,7 +80,7 @@
 		FCA8ACA62491AC970028EA0F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				FCA8ACA52491AC970028EA0F /* stopBigBrother.app */,
+				FCA8ACA52491AC970028EA0F /* Hide My Face.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -122,7 +122,7 @@
 			);
 			name = stopBigBrother;
 			productName = stopBigBrother;
-			productReference = FCA8ACA52491AC970028EA0F /* stopBigBrother.app */;
+			productReference = FCA8ACA52491AC970028EA0F /* Hide My Face.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -378,7 +378,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.stopBigBrother.brotherhood;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Hide My Face";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -398,7 +398,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.stopBigBrother.brotherhood;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Hide My Face";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

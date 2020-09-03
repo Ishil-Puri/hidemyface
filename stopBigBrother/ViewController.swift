@@ -12,16 +12,20 @@ import BSImagePicker
 import Vision
 
 class ViewController: UIViewController{
-
-    @IBOutlet weak var selectImgBtn: UIButton!
-    
-    @IBOutlet weak var processPhotosBtn: UIButton!
-    
-    @IBOutlet weak var collectionView: UICollectionView!
     
     @IBOutlet weak var settingsBtn: UIButton!
     
-    // MARK - global fields
+    @IBOutlet weak var collectionView: UICollectionView!
+    
+    @IBOutlet weak var infoLbl: UILabel!
+    
+    @IBOutlet weak var processPhotosBtn: UIButton!
+    
+    @IBOutlet weak var selectImgBtn: UIButton!
+    
+    @IBOutlet weak var logoImgView: UIImageView!
+    
+    // MARK - Global fields
     var selectedAssets = [PHAsset]()
     var metadataArray = [Dictionary<String, Any>]()
     var imageArray = [UIImage]()
@@ -30,6 +34,9 @@ class ViewController: UIViewController{
     let thumbManager = PHCachingImageManager()
     let thumbOption = PHImageRequestOptions()
     var spinner = SpinnerViewController()
+    
+    var clearSelectionBtn = UIButton()
+    var instructionView = UIImageView()
     
     // MARK - Segue fields
     var transferMD: Dictionary<String, Any> = Dictionary()
@@ -42,14 +49,33 @@ class ViewController: UIViewController{
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // MARK - make UI nice
+        // MARK - Make UI nice
+        logoImgView.layer.cornerRadius = 2
+        setInfoLabel()
+        infoLbl.isHidden = true
         selectImgBtn.layer.cornerRadius = 15
         selectImgBtn.titleLabel?.adjustsFontSizeToFitWidth = true
         processPhotosBtn.layer.cornerRadius = 15
         processPhotosBtn.isHidden = true
         settingsBtn.layer.cornerRadius = 10
         collectionView.layer.cornerRadius = 15
-        collectionView.layer.borderColor = UIColor.systemBlue.cgColor
+        
+        let hasDisplayedInstructions = instructionView.image != nil
+        instructionView = UIImageView(frame: CGRect(x: collectionView.frame.minX + 16, y: collectionView.frame.minY + 30, width: collectionView.frame.width - 32, height: 100))
+        instructionView.image = UIImage(named: "app-instructions-light")
+        instructionView.contentMode = .scaleAspectFit
+
+        collectionView.layer.borderColor = UIColor.black.cgColor.copy(alpha: 0.8)
+        if #available(iOS 12, *) {
+            if traitCollection.userInterfaceStyle == .dark {
+                collectionView.layer.borderColor = UIColor.white.cgColor.copy(alpha: 0.8)
+                instructionView.image = UIImage(named: "app-instructions-dark")
+            }
+        }
+        if !hasDisplayedInstructions {
+            collectionView.addSubview(instructionView)
+        }
+        
         collectionView.layer.borderWidth = 2.0
         
         thumbOption.isSynchronous = true
@@ -59,21 +85,42 @@ class ViewController: UIViewController{
         configureCV()
     }
     
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        if #available(iOS 12, *) {
+            if traitCollection.userInterfaceStyle == .dark {
+                collectionView.layer.borderColor = UIColor.white.cgColor.copy(alpha: 0.8)
+                instructionView.image = UIImage(named: "app-instructions-dark")
+                setClearBtnText(darkMode: true)
+            } else {
+                collectionView.layer.borderColor = UIColor.black.cgColor.copy(alpha: 0.8)
+                instructionView.image = UIImage(named: "app-instructions-light")
+                setClearBtnText(darkMode: false)
+            }
+        } else {
+            collectionView.layer.borderColor = UIColor.black.cgColor.copy(alpha: 0.8)
+            instructionView.image = UIImage(named: "app-instructions-light")
+            setClearBtnText(darkMode: false)
+        }
+    }
+    
     override func didReceiveMemoryWarning() {
         // Attempt to recover if encountered memory issue.
+        print("[-] Received Memory Warning")
         cleanUp(showMessage: false)
         thumbManager.stopCachingImagesForAllAssets()
-        showAlertWith(title: "Error", message: "Images are too large or numerous to be processed. Please try again in smaller batches.")
-        fatalError("Exceeded memory usage")
+        showAlertWith(title: "Error: Out of Memory", message: "Images are too large or numerous to be processed. Please try again later.", transfer: false)
+//        fatalError("Exceeded memory usage")
     }
     
     @IBAction func selectPhotoAction(_ sender: Any) {
         if PHPhotoLibrary.authorizationStatus() == .denied {
-            showAlertWith(title: "Access required...", message: "Please grant access to your photo library in Settings app to continue.")
+            showAlertWith(title: "Access required...", message: "Please grant access to your photo library in Settings app to continue.", transfer: false)
             return
         }
         let picker = ImagePickerController()
-        picker.settings.selection.max = 10
+        picker.settings.selection.max = 10 - selectedAssets.count
         presentImagePicker(picker, select: { (asset: PHAsset) -> Void in
             // User selects an asset.
         }, deselect: { (asset: PHAsset) -> Void in
@@ -92,7 +139,14 @@ class ViewController: UIViewController{
             self.thumbManager.startCachingImages(for: self.selectedAssets, targetSize: CGSize(width: 200, height: 200), contentMode: .aspectFill, options: self.thumbOption)
             self.collectionView.reloadData()
             self.processPhotosBtn.setTitle("process \(self.selectedAssets.count) photos", for: .normal)
+            
+            self.instructionView.removeFromSuperview()
+            self.infoLbl.isHidden = false
             self.processPhotosBtn.isHidden = false
+            self.selectImgBtn.setTitle("add images", for: .normal)
+            if !self.clearSelectionBtn.isDescendant(of: self.view) {
+                self.addClearSelectionBtn()
+            }
         })
     }
     
@@ -120,7 +174,7 @@ class ViewController: UIViewController{
                 return
             }
             img = result!
-            let data = img.jpegData(compressionQuality: 0.6)
+            let data = img.jpegData(compressionQuality: 0.65)
             img = UIImage(data: data!)!
             self.imageArray.append(img)
         })
@@ -134,7 +188,7 @@ class ViewController: UIViewController{
         }
         thumbManager.requestImage(for: asset, targetSize: CGSize(width: 200, height: 200), contentMode: .aspectFill, options: thumbOption, resultHandler: { (result, info) in
             resultImg = result!
-            let data = resultImg.jpegData(compressionQuality: 0.7)
+            let data = resultImg.jpegData(compressionQuality: 0.6)
             resultImg = UIImage(data: data!)!
         })
         return resultImg
@@ -146,7 +200,7 @@ class ViewController: UIViewController{
             if !self.fetchFullImage(asset: asset) {
                 let failedIndex = selectedAssets.firstIndex(of: asset)
                 cleanUp(showMessage: false)
-                showAlertWith(title: "Hmm", message: "Unable to download selected image (#\(failedIndex ?? -1)). Please re-select photos to process.")
+                showAlertWith(title: "Unable to get image", message: "Could not retrieve image (#\(failedIndex ?? -1)). Please check your network connection and/or iPhone storage capacity.", transfer: false)
                 success = false
                 return
             }
@@ -156,6 +210,7 @@ class ViewController: UIViewController{
     }
     
     @IBAction func processPhotosAction(_ sender: Any) {
+        clearSelectionBtn.removeFromSuperview()
         self.showSpinner()
         DispatchQueue.global(qos: .background).async {
             if !self.downloadImages() {
@@ -247,21 +302,28 @@ class ViewController: UIViewController{
         // Clean up + choose how to display finished process message
         removeSpinner()
         if showMessage {
-            self.showAlertWith(title: "\(selectedAssets.count) Saved", message: "\(selectedAssets.count) images processed and saved!")
+            self.showAlertWith(title: "\(selectedAssets.count) Saved", message: "\(selectedAssets.count) images processed and saved!", transfer: true)
         }
         selectedAssets.removeAll()
         metadataArray.removeAll()
         imageArray.removeAll()
         DispatchQueue.main.async {
+            self.selectImgBtn.setTitle("select images", for: .normal)
             self.collectionView.reloadData()
+            self.infoLbl.isHidden = true
             self.processPhotosBtn.isHidden = true
+            self.clearSelectionBtn.removeFromSuperview()
         }
     }
     
-    func showAlertWith(title: String, message: String) {
+    func showAlertWith(title: String, message: String, transfer: Bool) {
         DispatchQueue.main.async {
             let ac = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            ac.addAction(UIAlertAction(title: "OK", style: .default))
+            ac.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
+                if transfer {
+                    UIApplication.shared.open(URL(string: "photos-redirect://")!)
+                }
+            }))
             self.present(ac, animated: true)
         }
     }
@@ -305,7 +367,7 @@ class ViewController: UIViewController{
     }
     
     fileprivate func configureCV() {
-        let insetSize: CGFloat = 7
+        let insetSize: CGFloat = 10
         let spacing: CGFloat = 10
         let cellWidth: CGFloat = min(collectionView.frame.width/2 - insetSize - spacing/2, 200)
         let cellHeight: CGFloat = min(collectionView.frame.height/2.5 - spacing/2, 250)
@@ -316,10 +378,64 @@ class ViewController: UIViewController{
         layout.itemSize = cellSize
         layout.sectionInset = UIEdgeInsets(top: insetSize, left: insetSize, bottom: insetSize, right: insetSize)
         layout.minimumLineSpacing = spacing
-        layout.minimumInteritemSpacing = spacing
+        layout.minimumInteritemSpacing = spacing*0.8
         collectionView.setCollectionViewLayout(layout, animated: true)
         
         collectionView.reloadData()
+    }
+    
+    fileprivate func addClearSelectionBtn(){
+        print("[–] Adding clear selection btn")
+        clearSelectionBtn = UIButton(frame: CGRect(x: collectionView.frame.minX, y: collectionView.frame.maxY, width: 50, height: 40)) // utilized in setClearBtnText()
+        clearSelectionBtn.translatesAutoresizingMaskIntoConstraints = false
+        if #available(iOS 12.0, *) {
+            setClearBtnText(darkMode: traitCollection.userInterfaceStyle == .dark)
+        } else {
+            setClearBtnText(darkMode: false)
+        }
+        self.view.addSubview(clearSelectionBtn)
+        clearSelectionBtn.centerXAnchor.constraint(equalTo: collectionView.centerXAnchor).isActive = true
+        clearSelectionBtn.bottomAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: -5).isActive = true
+        clearSelectionBtn.layer.cornerRadius = 15
+        clearSelectionBtn.addTarget(self, action: #selector(self.clearSelectionAction), for: .touchUpInside)
+    }
+    
+    fileprivate func setClearBtnText(darkMode: Bool) {
+        let btnFrame = CGRect(x: collectionView.frame.minX, y: collectionView.frame.maxY, width: 50, height: 40)
+        let attachment = NSTextAttachment()
+        attachment.image = darkMode ? UIImage(named: "clear-symbol-dark") : UIImage(named: "clear-symbol-light")
+        let imageOffsetY: CGFloat = -btnFrame.height / 4
+        attachment.bounds = CGRect(x: 0, y: imageOffsetY, width: btnFrame.height * (attachment.image!.size.width/attachment.image!.size.height), height: btnFrame.height)
+        let attachmentString = NSAttributedString(attachment: attachment)
+        clearSelectionBtn.setAttributedTitle(attachmentString, for: .normal)
+    }
+    
+    @IBAction func clearSelectionAction() {
+        DispatchQueue.main.async {
+            let title = "Clear selection?"
+            let message = "Would you like to clear your current selection of images?"
+            let ac = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "No", style: .cancel))
+            ac.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { action in
+                self.cleanUp(showMessage: false)
+            }))
+            self.present(ac, animated: true)
+        }
+    }
+    
+    // Sets attributed text for info label
+    func setInfoLabel() {
+        print("[–] Add info label")
+        let attachment = NSTextAttachment()
+        attachment.image = UIImage(named: "info-blue")
+        let imageOffsetY: CGFloat = -infoLbl.frame.height/4
+        attachment.bounds = CGRect(x: 0, y: imageOffsetY, width: infoLbl.frame.height * (attachment.image!.size.width/attachment.image!.size.height), height: infoLbl.frame.height)
+        let attachmentString = NSAttributedString(attachment: attachment)
+        let completeText = NSMutableAttributedString(string: "")
+        completeText.append(attachmentString)
+        let textAfterIcon = NSMutableAttributedString(string: " Tap on an image to see its metadata")
+        completeText.append(textAfterIcon)
+        infoLbl.attributedText = completeText
     }
     
     func showSpinner() {

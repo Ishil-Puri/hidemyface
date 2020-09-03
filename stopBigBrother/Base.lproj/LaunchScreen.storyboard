@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
@@ -23,9 +23,20 @@
                                     <constraint firstAttribute="height" constant="250" id="get-jR-tna"/>
                                 </constraints>
                             </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hide My Face" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6qZ-qv-71R">
+                                <rect key="frame" x="88.5" y="586" width="237.5" height="60"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="60" id="rQm-4q-PqO"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="Avenir-Heavy" family="Avenir" pointSize="37"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
+                            <constraint firstItem="6qZ-qv-71R" firstAttribute="top" secondItem="fjS-jx-Pha" secondAttribute="bottom" constant="8" id="7LQ-Pi-VUP"/>
+                            <constraint firstItem="6qZ-qv-71R" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="GqP-Vj-OCw"/>
                             <constraint firstItem="fjS-jx-Pha" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="SeK-LS-Ohj"/>
                             <constraint firstItem="fjS-jx-Pha" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="USt-6U-Y6x"/>
                         </constraints>
@@ -38,6 +49,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="logo" width="2785" height="2817"/>
+        <image name="logo" width="1195" height="1195"/>
     </resources>
 </document>

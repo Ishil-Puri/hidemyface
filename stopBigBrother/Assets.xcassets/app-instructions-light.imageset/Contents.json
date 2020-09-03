@@ -1,11 +1,11 @@
 {
   "images" : [
     {
+      "filename" : "app-instructions-light.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "hmf-logo.png",
       "idiom" : "universal",
       "scale" : "2x"
     },

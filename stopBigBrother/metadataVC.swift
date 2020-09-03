@@ -65,32 +65,31 @@ class metadataVC: UIViewController {
             
         } else {
             mapView.isUserInteractionEnabled = false
-            let mkViewRect = mapView.bounds
-            let overlay = UIView(frame: mkViewRect)
+            let overlay = UIView(frame: CGRect(x: 0, y: 0, width: mapView.bounds.width + 40, height: mapView.bounds.height))
             overlay.backgroundColor = UIColor.black.withAlphaComponent(0.7)
             let message = UILabel(frame: CGRect(x: 0, y: 0, width: 205, height: 50))
             message.textColor = UIColor.white
             message.text = "No location data available."
-            message.center = CGPoint(x: overlay.bounds.width/2, y: overlay.bounds.height/2)
+            message.center = CGPoint(x: view.frame.width/2, y: overlay.bounds.height/2)
             overlay.addSubview(message)
             mapView.addSubview(overlay)
         }
     }
     
     fileprivate func ppMetadata(dict: Dictionary<String, Any>) -> String {
-        let mediaType = "\(dict["mediaType"] ?? "no media type")"
+//        let mediaType = "\(dict["mediaType"] ?? "no media type")"
         let date = dict["creationDate"]
             != nil ? " \(dict["creationDate"]!)" : "No date info found :("
-        let mediaSubtypes = "\(dict["mediaSubtypes"] ?? "no subtype")"
-        let sourceType = dict["sourceType"] ?? "no source type"
+//        let mediaSubtypes = "\(dict["mediaSubtypes"] ?? "no subtype")"
+//        let sourceType = dict["sourceType"] ?? "no source type"
         let location = dict["location"] != nil ? " \(dict["location"]!)" : "No Location info found :("
 //        let isFavorite = asset.isFavorite
 //        let isHidden = asset.isHidden
         let dimensions = "\(dict["pixelWidth"] ?? 0)x\(dict["pixelHeight"] ?? 0)"
         let modificationDate = dict["modificationDate"]
         != nil ? " \(dict["modificationDate"]!)" : "No modification date info found :("
-        
-        return "Media Type: \(mediaType)\nMedia Subtype: \(mediaSubtypes)\nCreation Date: \(date)\nSource Type: \(sourceType)\nLocation: \(location)\nDimensions: \(dimensions)\nLast Modified: \(modificationDate)"
+        // Media Type: \(mediaType)\nMedia Subtype: \(mediaSubtypes)\nSource Type: \(sourceType)\n
+        return "Creation Date: \(date)\n\nLocation: \(location)\n\nDimensions: \(dimensions)\n\nLast Modified: \(modificationDate)"
     }
     
 }

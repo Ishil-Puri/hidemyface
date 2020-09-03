@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "FCA8ACA42491AC970028EA0F"
-               BuildableName = "stopBigBrother.app"
+               BuildableName = "Hide My Face.app"
                BlueprintName = "stopBigBrother"
                ReferencedContainer = "container:stopBigBrother.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FCA8ACA42491AC970028EA0F"
-            BuildableName = "stopBigBrother.app"
+            BuildableName = "Hide My Face.app"
             BlueprintName = "stopBigBrother"
             ReferencedContainer = "container:stopBigBrother.xcodeproj">
          </BuildableReference>
@@ -59,7 +59,7 @@
          <EnvironmentVariable
             key = "MallocStackLogging"
             value = "YES"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
@@ -74,7 +74,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FCA8ACA42491AC970028EA0F"
-            BuildableName = "stopBigBrother.app"
+            BuildableName = "Hide My Face.app"
             BlueprintName = "stopBigBrother"
             ReferencedContainer = "container:stopBigBrother.xcodeproj">
          </BuildableReference>
