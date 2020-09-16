@@ -1,9 +1,8 @@
 //
 //  ViewController.swift
-//  stopBigBrother
+//  hide my face
 //
 //  Created by ip on 6/10/20.
-//  Copyright © 2020 The Brotherhood Inc. All rights reserved.
 //
 
 import UIKit
@@ -25,6 +24,8 @@ class ViewController: UIViewController{
     
     @IBOutlet weak var logoImgView: UIImageView!
     
+    @IBOutlet weak var infoBtn: UIButton!
+    
     // MARK - Global fields
     var selectedAssets = [PHAsset]()
     var metadataArray = [Dictionary<String, Any>]()
@@ -36,7 +37,8 @@ class ViewController: UIViewController{
     var spinner = SpinnerViewController()
     
     var clearSelectionBtn = UIButton()
-    var instructionView = UIImageView()
+    var cvInstructionView = UITextView()
+    var infoOverlay = UIView()
     
     // MARK - Segue fields
     var transferMD: Dictionary<String, Any> = Dictionary()
@@ -49,7 +51,7 @@ class ViewController: UIViewController{
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // MARK - Make UI nice
+        // MARK - Make UI look nice
         logoImgView.layer.cornerRadius = 2
         setInfoLabel()
         infoLbl.isHidden = true
@@ -57,26 +59,23 @@ class ViewController: UIViewController{
         selectImgBtn.titleLabel?.adjustsFontSizeToFitWidth = true
         processPhotosBtn.layer.cornerRadius = 15
         processPhotosBtn.isHidden = true
+        infoBtn.layer.cornerRadius = 10
         settingsBtn.layer.cornerRadius = 10
+        collectionView.layer.borderWidth = 2.0
         collectionView.layer.cornerRadius = 15
-        
-        let hasDisplayedInstructions = instructionView.image != nil
-        instructionView = UIImageView(frame: CGRect(x: collectionView.frame.minX + 16, y: collectionView.frame.minY + 30, width: collectionView.frame.width - 32, height: 100))
-        instructionView.image = UIImage(named: "app-instructions-light")
-        instructionView.contentMode = .scaleAspectFit
-
         collectionView.layer.borderColor = UIColor.black.cgColor.copy(alpha: 0.8)
+        
+        if !cvInstructionView.hasText {
+            cvInstructionView = instructionViewSetup()
+            collectionView.addSubview(cvInstructionView)
+        }
+        
         if #available(iOS 12, *) {
             if traitCollection.userInterfaceStyle == .dark {
                 collectionView.layer.borderColor = UIColor.white.cgColor.copy(alpha: 0.8)
-                instructionView.image = UIImage(named: "app-instructions-dark")
+                cvInstructionView.textColor = UIColor.white
             }
         }
-        if !hasDisplayedInstructions {
-            collectionView.addSubview(instructionView)
-        }
-        
-        collectionView.layer.borderWidth = 2.0
         
         thumbOption.isSynchronous = true
         thumbOption.isNetworkAccessAllowed = true
@@ -91,16 +90,16 @@ class ViewController: UIViewController{
         if #available(iOS 12, *) {
             if traitCollection.userInterfaceStyle == .dark {
                 collectionView.layer.borderColor = UIColor.white.cgColor.copy(alpha: 0.8)
-                instructionView.image = UIImage(named: "app-instructions-dark")
+                cvInstructionView.textColor = UIColor.white
                 setClearBtnText(darkMode: true)
             } else {
                 collectionView.layer.borderColor = UIColor.black.cgColor.copy(alpha: 0.8)
-                instructionView.image = UIImage(named: "app-instructions-light")
+                cvInstructionView.textColor = UIColor.darkText
                 setClearBtnText(darkMode: false)
             }
         } else {
             collectionView.layer.borderColor = UIColor.black.cgColor.copy(alpha: 0.8)
-            instructionView.image = UIImage(named: "app-instructions-light")
+            cvInstructionView.textColor = UIColor.darkText
             setClearBtnText(darkMode: false)
         }
     }
@@ -138,12 +137,13 @@ class ViewController: UIViewController{
             }
             self.thumbManager.startCachingImages(for: self.selectedAssets, targetSize: CGSize(width: 200, height: 200), contentMode: .aspectFill, options: self.thumbOption)
             self.collectionView.reloadData()
-            self.processPhotosBtn.setTitle("process \(self.selectedAssets.count) photos", for: .normal)
+            let isPluralTxt = self.selectedAssets.count > 1 ? "Photos" : "Photo"
+            self.processPhotosBtn.setTitle("Process \(self.selectedAssets.count) \(isPluralTxt)", for: .normal)
             
-            self.instructionView.removeFromSuperview()
+            self.cvInstructionView.removeFromSuperview()
             self.infoLbl.isHidden = false
             self.processPhotosBtn.isHidden = false
-            self.selectImgBtn.setTitle("add images", for: .normal)
+            self.selectImgBtn.setTitle("Add Images", for: .normal)
             if !self.clearSelectionBtn.isDescendant(of: self.view) {
                 self.addClearSelectionBtn()
             }
@@ -308,7 +308,7 @@ class ViewController: UIViewController{
         metadataArray.removeAll()
         imageArray.removeAll()
         DispatchQueue.main.async {
-            self.selectImgBtn.setTitle("select images", for: .normal)
+            self.selectImgBtn.setTitle("Select Images", for: .normal)
             self.collectionView.reloadData()
             self.infoLbl.isHidden = true
             self.processPhotosBtn.isHidden = true
@@ -436,6 +436,56 @@ class ViewController: UIViewController{
         let textAfterIcon = NSMutableAttributedString(string: " Tap on an image to see its metadata")
         completeText.append(textAfterIcon)
         infoLbl.attributedText = completeText
+    }
+    
+    func instructionViewSetup() -> UITextView {
+        var instructionView = UITextView()
+        instructionView = UITextView(frame: CGRect(x: collectionView.frame.minX + 16, y: collectionView.frame.minY + 30, width: collectionView.frame.width - 32, height: 160))
+        let sentence = NSAttributedString(string: "How to use:\n1. Select images\n2. Tap on an image to view metadata\n3. Adjust settings as appropriate\n4. Process photos")
+        instructionView.attributedText = sentence
+        instructionView.font = UIFont(name: "Avenir-Medium", size: 17.0)
+        instructionView.isEditable = false
+        instructionView.isSelectable = false
+        instructionView.backgroundColor = UIColor.clear
+        if #available(iOS 13, *) {
+            instructionView.textColor = UIColor.label
+        }
+        return instructionView
+    }
+    
+    @IBAction func infoBtnAction(_ sender: Any) {
+        let overlayInstructionView = instructionViewSetup()
+        overlayInstructionView.font = UIFont(name: "Avenir-Medium", size: 18.0)
+        infoOverlay = UIView(frame: view.frame)
+        infoOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        let mainOverlay = UIView(frame: CGRect(x: view.bounds.minX + 25, y: view.bounds.minY, width: view.bounds.width - 50, height: 50 + overlayInstructionView.frame.height + 55 + 50))
+        mainOverlay.center = view.center.applying(CGAffineTransform.init(scaleX: 1, y: 0.9))
+        let lbl = UILabel(frame: CGRect(x: mainOverlay.bounds.minX, y: mainOverlay.bounds.minY + 5, width: mainOverlay.bounds.width, height: 30))
+        lbl.attributedText = NSAttributedString(string: "Instructions")
+        lbl.font = UIFont.init(name: "Avenir-Heavy", size: 20.0)
+        lbl.textAlignment = .center
+        mainOverlay.addSubview(lbl)
+        if #available(iOS 13.0, *) {
+            mainOverlay.backgroundColor = UIColor.systemGray6
+        } else {
+            mainOverlay.backgroundColor = UIColor.white.withAlphaComponent(0.95)
+        }
+        mainOverlay.layer.cornerRadius = 12
+        let dismissBtn = UIButton(frame: CGRect(x: (mainOverlay.bounds.width - 120) / 2, y: mainOverlay.bounds.maxY - 55, width: 120, height: 45))
+        dismissBtn.setTitle("Dismiss", for: .normal)
+        dismissBtn.titleLabel?.font = UIFont.init(name: "Avenir-Heavy", size: 18.0)
+        dismissBtn.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.75)
+        dismissBtn.layer.cornerRadius = 15
+        dismissBtn.addTarget(self, action: #selector(removeInfoOverlay), for: .touchUpInside)
+        overlayInstructionView.frame = CGRect(x: mainOverlay.bounds.minX + 5, y: lbl.frame.maxY + 20, width: mainOverlay.bounds.width - 10, height: overlayInstructionView.frame.height)
+        mainOverlay.addSubview(overlayInstructionView)
+        mainOverlay.addSubview(dismissBtn)
+        infoOverlay.addSubview(mainOverlay)
+        self.view.addSubview(infoOverlay)
+    }
+    
+    @IBAction func removeInfoOverlay() {
+        infoOverlay.removeFromSuperview()
     }
     
     func showSpinner() {

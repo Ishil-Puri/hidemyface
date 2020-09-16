@@ -22,8 +22,26 @@ class metadataVC: UIViewController {
         dismissBtn.layer.cornerRadius = 15
         metadataTxtView.text = ppMetadata(dict: receiveMD)
         metadataTxtView.layer.cornerRadius = 15
+        metadataTxtView.textContainerInset = UIEdgeInsets(top: 10, left: 5, bottom: 0, right: 5)
         mapView.layer.cornerRadius = 15
         configureMap()
+        
+        if #available(iOS 13, *) {
+            if traitCollection.userInterfaceStyle == .dark {
+                metadataTxtView.backgroundColor = UIColor.separator
+            }
+        }
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if #available(iOS 13, *) {
+            if traitCollection.userInterfaceStyle == .dark {
+                metadataTxtView.backgroundColor = UIColor.separator
+            } else {
+                metadataTxtView.backgroundColor = UIColor.white
+            }
+        }
     }
     
     fileprivate func configureMap() {
@@ -68,7 +86,7 @@ class metadataVC: UIViewController {
             let overlay = UIView(frame: CGRect(x: 0, y: 0, width: mapView.bounds.width + 40, height: mapView.bounds.height))
             overlay.backgroundColor = UIColor.black.withAlphaComponent(0.7)
             let message = UILabel(frame: CGRect(x: 0, y: 0, width: 205, height: 50))
-            message.textColor = UIColor.white
+            message.textColor = UIColor.white.withAlphaComponent(0.95)
             message.text = "No location data available."
             message.center = CGPoint(x: view.frame.width/2, y: overlay.bounds.height/2)
             overlay.addSubview(message)
@@ -82,7 +100,7 @@ class metadataVC: UIViewController {
             != nil ? " \(dict["creationDate"]!)" : "No date info found :("
 //        let mediaSubtypes = "\(dict["mediaSubtypes"] ?? "no subtype")"
 //        let sourceType = dict["sourceType"] ?? "no source type"
-        let location = dict["location"] != nil ? " \(dict["location"]!)" : "No Location info found :("
+        let location = dict["location"] != nil ? " \(dict["location"]!)" : "No location data available."
 //        let isFavorite = asset.isFavorite
 //        let isHidden = asset.isHidden
         let dimensions = "\(dict["pixelWidth"] ?? 0)x\(dict["pixelHeight"] ?? 0)"
