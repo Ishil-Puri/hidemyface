@@ -1,6 +1,6 @@
 //
 //  ViewController.swift
-//  hide my face
+//  stopBigBrother
 //
 //  Created by ip on 6/10/20.
 //

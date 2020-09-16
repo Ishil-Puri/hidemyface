@@ -3,7 +3,7 @@
 //  stopBigBrother
 //
 //  Created by ip on 7/18/20.
-//  Copyright © 2020 The Brotherhood Inc. All rights reserved.
+//  Copyright © 2020 Hide My Face Inc. All rights reserved.
 //
 
 import UIKit
