@@ -14,27 +14,36 @@ class settingsVC: UIViewController {
     @IBOutlet weak var deleteLocationSwitch: UISwitch!
     @IBOutlet weak var blurFacesSwitch: UISwitch!
     @IBOutlet weak var saveAsCopySwitch: UISwitch!
+    @IBOutlet weak var compressionSlider: UISlider!
     
     @IBOutlet weak var aboutBtn: UIButton!
     @IBOutlet weak var websiteBtn: UIButton!
     @IBOutlet weak var aboutTxtView: UITextView!
+    @IBOutlet weak var mainStackView: UIStackView!
     
     
-    var segueSettings: Dictionary<String, Bool> = Dictionary()
+    var segueSettings: Dictionary<String, Any> = Dictionary()
     
     override func viewDidLoad() {
         print("[-] Settings VC loaded")
         saveBtn.layer.cornerRadius = 15
         aboutBtn.layer.cornerRadius = 15
         websiteBtn.layer.cornerRadius = 15
-        deleteLocationSwitch.setOn(segueSettings["delete"]!, animated: false)
-        blurFacesSwitch.setOn(segueSettings["blur"]!, animated: false)
-        saveAsCopySwitch.setOn(segueSettings["save"]!, animated: false)
+        deleteLocationSwitch.setOn(segueSettings["delete"] as! Bool, animated: false)
+        blurFacesSwitch.setOn(segueSettings["blur"] as! Bool, animated: false)
+        saveAsCopySwitch.setOn(segueSettings["save"] as! Bool, animated: false)
+        compressionSlider.setValue(segueSettings["slider"] as! Float, animated: true)
         aboutTxtView.isHidden = true
+        if UIDevice().userInterfaceIdiom == .phone {
+            if UIScreen.main.nativeBounds.height < 1920{
+                print("[-] reduced spacing")
+                mainStackView.spacing = 24
+            }
+        }
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        print("[-] Settings Saved:\nDelete location data = \(deleteLocationSwitch.isOn)\nBlur faces in image = \(blurFacesSwitch.isOn)\nSave as a copy = \(saveAsCopySwitch.isOn)")
+        print("[-] Settings Saved:\nDelete location data = \(deleteLocationSwitch.isOn)\nBlur faces in image = \(blurFacesSwitch.isOn)\nSave as a copy = \(saveAsCopySwitch.isOn)\nSlider value = \(compressionSlider.value)")
     }
     
     @IBAction func aboutAction(_ sender: Any) {

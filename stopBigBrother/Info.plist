@@ -25,11 +25,11 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Please allow access to save photo in your photo library</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Access photo library to retreive photo</string>
+	<string>Please enable accesss. This app modifies photos and saves new copies to your photo library.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
-		<false/>
+		<true/>
 		<key>UISceneConfigurations</key>
 		<dict>
 			<key>UIWindowSceneSessionRoleApplication</key>

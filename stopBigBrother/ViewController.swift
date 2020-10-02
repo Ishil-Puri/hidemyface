@@ -47,6 +47,7 @@ class ViewController: UIViewController{
     var shouldBlurFaces = true
     var shouldDeleteLocation = true
     var saveAsCopy = true
+    var sliderValue: Float = 0.65
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -109,13 +110,13 @@ class ViewController: UIViewController{
         print("[-] Received Memory Warning")
         cleanUp(showMessage: false)
         thumbManager.stopCachingImagesForAllAssets()
-        showAlertWith(title: "Error: Out of Memory", message: "Images are too large or numerous to be processed. Please try again later.", transfer: false)
+        showAlertWith(title: "Error: Out of Memory", message: "Images are too large or numerous to be processed. Please try again later.", transfer: "")
 //        fatalError("Exceeded memory usage")
     }
     
     @IBAction func selectPhotoAction(_ sender: Any) {
         if PHPhotoLibrary.authorizationStatus() == .denied {
-            showAlertWith(title: "Access required...", message: "Please grant access to your photo library in Settings app to continue.", transfer: false)
+            showAlertWith(title: "Access required...", message: "Please grant access to your photo library in settings app to continue.", transfer: "settings")
             return
         }
         let picker = ImagePickerController()
@@ -174,7 +175,7 @@ class ViewController: UIViewController{
                 return
             }
             img = result!
-            let data = img.jpegData(compressionQuality: 0.65)
+            let data = img.jpegData(compressionQuality: CGFloat(self.sliderValue))
             img = UIImage(data: data!)!
             self.imageArray.append(img)
         })
@@ -200,7 +201,7 @@ class ViewController: UIViewController{
             if !self.fetchFullImage(asset: asset) {
                 let failedIndex = selectedAssets.firstIndex(of: asset)
                 cleanUp(showMessage: false)
-                showAlertWith(title: "Unable to get image", message: "Could not retrieve image (#\(failedIndex ?? -1)). Please check your network connection and/or iPhone storage capacity.", transfer: false)
+                showAlertWith(title: "Unable to get image", message: "Could not retrieve image (#\(failedIndex ?? -1)). Please check your network connection and/or iPhone storage capacity.", transfer: "")
                 success = false
                 return
             }
@@ -302,7 +303,7 @@ class ViewController: UIViewController{
         // Clean up + choose how to display finished process message
         removeSpinner()
         if showMessage {
-            self.showAlertWith(title: "\(selectedAssets.count) Saved", message: "\(selectedAssets.count) images processed and saved!", transfer: true)
+            self.showAlertWith(title: "\(selectedAssets.count) Saved", message: "\(selectedAssets.count) images processed and saved!", transfer: "photos")
         }
         selectedAssets.removeAll()
         metadataArray.removeAll()
@@ -316,14 +317,31 @@ class ViewController: UIViewController{
         }
     }
     
-    func showAlertWith(title: String, message: String, transfer: Bool) {
+    func showAlertWith(title: String, message: String, transfer: String) {
+        guard let photosUrl = URL(string: "photos-redirect://") else {
+            return
+        }
+        guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else {
+            return
+        }
         DispatchQueue.main.async {
             let ac = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            ac.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
-                if transfer {
-                    UIApplication.shared.open(URL(string: "photos-redirect://")!)
-                }
-            }))
+            ac.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            if transfer != "" {
+                let redirectAction = UIAlertAction(title: "Go to \(transfer)", style: .default, handler: { action in
+                    if transfer=="photos" {
+                        UIApplication.shared.open(photosUrl, completionHandler: { (success) in
+                            print("Photos opened: \(success)")
+                        })
+                    } else if transfer=="settings" {
+                        UIApplication.shared.open(settingsUrl, completionHandler: { (success) in
+                            print("Settings opened: \(success)")
+                        })
+                    }
+                })
+                ac.addAction(redirectAction)
+                ac.preferredAction = redirectAction
+            }
             self.present(ac, animated: true)
         }
     }
@@ -348,6 +366,7 @@ class ViewController: UIViewController{
                 shouldDeleteLocation = senderVC.deleteLocationSwitch.isOn
                 shouldBlurFaces = senderVC.blurFacesSwitch.isOn
                 saveAsCopy = senderVC.saveAsCopySwitch.isOn
+                sliderValue = senderVC.compressionSlider.value
             }
         }
         // Use data from the view controller which initiated the unwind segue
@@ -363,6 +382,7 @@ class ViewController: UIViewController{
             vc.segueSettings["delete"] = shouldDeleteLocation
             vc.segueSettings["blur"] =  shouldBlurFaces
             vc.segueSettings["save"] = saveAsCopy
+            vc.segueSettings["slider"] = sliderValue
         }
     }
     
@@ -457,7 +477,7 @@ class ViewController: UIViewController{
         let overlayInstructionView = instructionViewSetup()
         overlayInstructionView.font = UIFont(name: "Avenir-Medium", size: 18.0)
         infoOverlay = UIView(frame: view.frame)
-        infoOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        infoOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.7)
         let mainOverlay = UIView(frame: CGRect(x: view.bounds.minX + 25, y: view.bounds.minY, width: view.bounds.width - 50, height: 50 + overlayInstructionView.frame.height + 55 + 50))
         mainOverlay.center = view.center.applying(CGAffineTransform.init(scaleX: 1, y: 0.9))
         let lbl = UILabel(frame: CGRect(x: mainOverlay.bounds.minX, y: mainOverlay.bounds.minY + 5, width: mainOverlay.bounds.width, height: 30))
