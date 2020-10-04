@@ -1,9 +1,10 @@
 # hidemyface
-*By Ishil Puri*
+### *By Ishil Puri*
+
 
 ### An iOS app that strips location metadata and blurs faces on static images to protect users' identities.
 [![HitCount](http://hits.dwyl.com/ishil-puri/hidemyface.svg)](http://hits.dwyl.com/ishil-puri/hidemyface)
----
+
 
 ### Purpose
 ---
