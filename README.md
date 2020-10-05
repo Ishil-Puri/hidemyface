@@ -8,7 +8,7 @@
 
 ### Purpose
 ---
-I've been on edge reading about the breaches of privacy across the world – whether that be cases like the infamous FB & Cambridge Analytica, ethically questionable projects like Clearview AI, or the recent abuses of facial rec tehcnology in protests.
+I've been on edge reading about the breaches of privacy across the world – whether that be cases like the infamous FB & Cambridge Analytica, ethically questionable projects like Clearview AI, or the recent abuses of facial rec technology in protests.
 
 With this project I was really interested in creating a tool for transparency that enables us all to make an active decision in how we share our personal data, if at all. Hence, I believe to ensure accessibility, the best medium for this project is in the form of a lightweight and intuitive app.
 
