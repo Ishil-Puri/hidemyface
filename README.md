@@ -14,6 +14,8 @@ With this project I was really interested in creating a tool for transparency th
 
 I'll be adding more to this README, soon, to share my experience of developing the app – including the details like the learning curve for Swift & Xcode as well as areas that were difficult and how I overcame them!
 
+_Check out where most of the action is at: [ViewController.swift](https://github.com/Ishil-Puri/hidemyface/blob/master/stopBigBrother/ViewController.swift)_
+
 ### Main frameworks used:
 ---
 * VisionKit
