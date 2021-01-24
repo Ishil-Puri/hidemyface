@@ -1,16 +1,20 @@
 PODS:
-  - BSImagePicker (3.2.0)
+  - BSImagePicker (3.3.1)
+  - iOSPhotoEditor (1.0.0)
 
 DEPENDENCIES:
   - BSImagePicker (~> 3.2)
+  - iOSPhotoEditor (~> 1.0)
 
 SPEC REPOS:
   trunk:
     - BSImagePicker
+    - iOSPhotoEditor
 
 SPEC CHECKSUMS:
-  BSImagePicker: 1c0d14fa6f1b55380cd49cbebe47584f10e180c6
+  BSImagePicker: 0fe04b574d4d6b81093785d2af6c26227efc8428
+  iOSPhotoEditor: 2951f35246a31dcb428b6292248a9c065582d03e
 
-PODFILE CHECKSUM: 80a59857a9536adcb424fde54f1bb206872a7d1c
+PODFILE CHECKSUM: ec6ab9b851199a6227723c50b5f39342f7c36c4f
 
 COCOAPODS: 1.9.3

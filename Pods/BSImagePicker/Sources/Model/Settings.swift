@@ -23,7 +23,7 @@
 import UIKit
 import Photos
 
-/// Settings for BSImagePicker
+@objc(BSImagePickerSettings) // Fix for ObjC header name conflicting.
 @objcMembers public class Settings : NSObject {
     public static let shared = Settings()
 
@@ -73,7 +73,7 @@ import Photos
         public lazy var min: Int = 1
         
         /// If it reaches the max limit, unselect the first selection, and allow the new selection
-        public lazy var unselectOnReachingMax : Bool = false
+        @objc public lazy var unselectOnReachingMax : Bool = false
     }
 
     public class List : NSObject {
@@ -187,6 +187,9 @@ import Photos
     public class Dismiss : NSObject {
         /// Should the image picker dismiss when done/cancelled
         public lazy var enabled = true
+
+        /// Allow the user to dismiss the image picker by swiping down
+        public lazy var allowSwipe = false
     }
 
     /// Theme settings
