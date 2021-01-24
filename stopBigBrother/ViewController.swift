@@ -27,10 +27,9 @@ class ViewController: UIViewController{
     @IBOutlet weak var infoBtn: UIButton!
     
     // MARK - Global fields
-    var selectedAssets = [PHAsset]()
-    var metadataArray = [Dictionary<String, Any>]()
-    var imageArray = [UIImage]()
-    var latestDrawingIndex = 0
+    var aimMap = Dictionary<String, Aim>()
+    var aimOrderedIDs = [String]()
+    var currentAssetID = ""
     
     let thumbManager = PHCachingImageManager()
     let thumbOption = PHImageRequestOptions()
@@ -105,22 +104,22 @@ class ViewController: UIViewController{
         }
     }
     
+    // Attempt to recover if encountered memory warning.
     override func didReceiveMemoryWarning() {
-        // Attempt to recover if encountered memory issue.
         print("[-] Received Memory Warning")
         cleanUp(showMessage: false)
         thumbManager.stopCachingImagesForAllAssets()
-        showAlertWith(title: "Error: Out of Memory", message: "Images are too large or numerous to be processed. Please try again later.", transfer: "")
-//        fatalError("Exceeded memory usage")
+        showAlertWith(title: "Oops: Low on Memory", message: "Your phone is low on memory. Try closing other apps or please try again.", transfer: "")
     }
     
+    // Select photos from library.
     @IBAction func selectPhotoAction(_ sender: Any) {
         if PHPhotoLibrary.authorizationStatus() == .denied {
             showAlertWith(title: "Access required...", message: "Please grant access to your photo library in settings app to continue.", transfer: "settings")
             return
         }
         let picker = ImagePickerController()
-        picker.settings.selection.max = 10 - selectedAssets.count
+        picker.settings.selection.max = 10 - aimMap.count
         presentImagePicker(picker, select: { (asset: PHAsset) -> Void in
             // User selects an asset.
         }, deselect: { (asset: PHAsset) -> Void in
@@ -130,16 +129,16 @@ class ViewController: UIViewController{
         }, finish: { (assets: [PHAsset]) -> Void in
             // User finishes selection.
             for asset in assets {
-                let exists = self.selectedAssets.contains { element in element.localIdentifier==asset.localIdentifier }
+                let exists = self.aimMap[asset.localIdentifier] != nil
                 if !exists {
-                    self.selectedAssets.append(asset)
-                    self.metadataArray.append(self.getMetadata(asset: asset))
+                    self.aimMap[asset.localIdentifier] = Aim(asset: asset, metadata: self.getMetadata(asset: asset), position: self.aimMap.count)
+                    self.aimOrderedIDs.append(asset.localIdentifier)
                 }
             }
-            self.thumbManager.startCachingImages(for: self.selectedAssets, targetSize: CGSize(width: 200, height: 200), contentMode: .aspectFill, options: self.thumbOption)
+            self.thumbManager.startCachingImages(for: self.aimMap.values.map{value in value.asset}, targetSize: CGSize(width: 200, height: 200), contentMode: .aspectFill, options: self.thumbOption)
             self.collectionView.reloadData()
-            let isPluralTxt = self.selectedAssets.count > 1 ? "Photos" : "Photo"
-            self.processPhotosBtn.setTitle("Process \(self.selectedAssets.count) \(isPluralTxt)", for: .normal)
+            let isPluralTxt = self.aimMap.count > 1 ? "Photos" : "Photo"
+            self.processPhotosBtn.setTitle("Process \(self.aimMap.count) \(isPluralTxt)", for: .normal)
             
             self.cvInstructionView.removeFromSuperview()
             self.infoLbl.isHidden = false
@@ -151,11 +150,11 @@ class ViewController: UIViewController{
         })
     }
     
+    // Retrieve full size image with asset ID.
     private func fetchFullImage(asset: PHAsset) -> Bool {
         print("Fetching image: \(asset.localIdentifier)")
         var img = UIImage()
         var success = true
-        // MARK - FIXME: Memory issues reduced but present with current architecture (meanwhile, image selection limit is capped).
         let manager = PHImageManager()
         let option = PHImageRequestOptions()
         
@@ -177,11 +176,12 @@ class ViewController: UIViewController{
             img = result!
             let data = img.jpegData(compressionQuality: CGFloat(self.sliderValue))
             img = UIImage(data: data!)!
-            self.imageArray.append(img)
+            self.aimMap[asset.localIdentifier]?.image = img
         })
         return success
     }
     
+    // Retrieve thumbnail with asset ID.
     private func fetchThumbnail(asset: PHAsset) -> UIImage {
         var resultImg: UIImage = UIImage()
         thumbOption.progressHandler = { (progress, error, stop, info) in
@@ -195,21 +195,22 @@ class ViewController: UIViewController{
         return resultImg
     }
     
+    // Download image from iCloud.
     private func downloadImages() -> Bool {
         var success = true
-        self.selectedAssets.forEach { asset in
-            if !self.fetchFullImage(asset: asset) {
-                let failedIndex = selectedAssets.firstIndex(of: asset)
+        self.aimMap.values.forEach { value in
+            if !self.fetchFullImage(asset: value.asset) {
+                let failedIndex = value.position
                 cleanUp(showMessage: false)
-                showAlertWith(title: "Unable to get image", message: "Could not retrieve image (#\(failedIndex ?? -1)). Please check your network connection and/or iPhone storage capacity.", transfer: "")
+                showAlertWith(title: "Unable to get image", message: "Could not retrieve image (#\(failedIndex)). Please check your network connection and/or iPhone storage capacity.", transfer: "")
                 success = false
                 return
             }
         }
-        // return download successful boolean?
         return success
     }
     
+    // Queue selected photos to be processed.
     @IBAction func processPhotosAction(_ sender: Any) {
         clearSelectionBtn.removeFromSuperview()
         self.showSpinner()
@@ -218,17 +219,19 @@ class ViewController: UIViewController{
                 return
             }
             DispatchQueue.main.async {
-                for i in 0...self.selectedAssets.count-1 {
-                    print("[-] Processing #\(i)")
-                    self.processImage(index: i)
+                self.aimOrderedIDs.forEach { assetID in
+                    let value = self.aimMap[assetID]!
+                    print("[-] Processing #\(value.position)")
+                    self.currentAssetID = value.asset.localIdentifier
+                    self.processImage(image: value.image)
                 }
             }
         }
     }
     
-    private func processImage(index: Int) {
-        let originalImg: UIImage = imageArray[index]
-        self.latestDrawingIndex = index
+    // Process photos through vision kit.
+    private func processImage(image: UIImage) {
+        let originalImg: UIImage = image
         let sequenceHandler = VNSequenceRequestHandler()
         let detectFaceRequest = VNDetectFaceRectanglesRequest(completionHandler: detectedFace)
         do {
@@ -238,34 +241,34 @@ class ViewController: UIViewController{
         }
     }
     
+    // Retrieve detected face boxes.
     private func detectedFace(request: VNRequest, error: Error?) {
-        print("Woot, we've arrived at the completion handler")
         guard var results = request.results as? [VNFaceObservation]
             else {
-                // TODO: Create advanced error handling, show a report of images unable to be processed
                 print("Encountered error when retrieving results array")
                 return
         }
-        let capIndex = self.latestDrawingIndex
-        DispatchQueue.main.async {
-            if !self.shouldBlurFaces {
+        let asyncAssetID = self.currentAssetID
+        DispatchQueue.main.async { [self] in
+            if !shouldBlurFaces {
                 results = []
-                print("Will not blur faces due to settings.")
+                print("Will not blur faces (due to settings)")
             } else {
-                print("Woot, we are now drawing bounding boxes around \(results.count) faces")
+                print("Blurring \(results.count) faces")
             }
-            let annotatedImage = self.draw(faces: results, captureCurrIndex: capIndex)
-            self.saveImage(image: annotatedImage, index: capIndex)
-            print("[-] Saving photo # \(capIndex)")
+            let aimObj = aimMap[asyncAssetID]!
+            let autoAnnotatedImage = draw(faces: results, image: aimObj.image)
+            aimMap[asyncAssetID]?.image = autoAnnotatedImage
+            if (aimObj.position == aimMap.count - 1) {
+                self.performSegue(withIdentifier: "ReviewVC", sender: self)
+            }
+            print("[-] Done with asset # \(asyncAssetID)")
         }
     }
-
-    private func draw(faces: [VNFaceObservation], captureCurrIndex: Int) -> UIImage{
+    
+    // Draw face boxes on image.
+    private func draw(faces: [VNFaceObservation], image: UIImage) -> UIImage{
         var faceBoxes: [CGRect] = []
-        let image = imageArray[captureCurrIndex]
-        imageArray[captureCurrIndex] = UIImage()
-        print("[-] index: \(captureCurrIndex)")
-        
         let renderedImage = UIGraphicsImageRenderer(size: image.size).image { (rendererContext) in
             image.draw(at: CGPoint.zero)
             faces.forEach{ face in
@@ -279,35 +282,19 @@ class ViewController: UIViewController{
         return renderedImage
     }
     
-    private func saveImage(image: UIImage, index: Int) {
-        if saveAsCopy {
-            PHPhotoLibrary.shared().performChanges({
-                let creationRequest = PHAssetChangeRequest.creationRequestForAsset(from: image)
-                if !self.shouldDeleteLocation {
-                    creationRequest.location = self.metadataArray[index]["location"] as? CLLocation
-                }
-            }, completionHandler: { success, error in
-                if !success {
-                    print("Error creating asset: \(String(describing: error))")
-                }
-                if index == self.selectedAssets.count - 1 {
-                    self.cleanUp(showMessage: true)
-                }
-            })
-        } else {
-            // MARK – implement later: save as changes to original image
-        }
-    }
-    
+    // Release memory and appropriate display "completion" message.
     private func cleanUp(showMessage: Bool) {
-        // Clean up + choose how to display finished process message
         removeSpinner()
         if showMessage {
-            self.showAlertWith(title: "\(selectedAssets.count) Saved", message: "\(selectedAssets.count) images processed and saved!", transfer: "photos")
+            if(aimOrderedIDs.count == 0) {
+                self.showAlertWith(title: "Cancelled", message: "No photos were saved.", transfer: "")
+            } else {
+                self.showAlertWith(title: "Done", message: "\(aimOrderedIDs.count) images processed and saved.", transfer: "photos")
+            }
         }
-        selectedAssets.removeAll()
-        metadataArray.removeAll()
-        imageArray.removeAll()
+        aimMap.removeAll()
+        aimOrderedIDs.removeAll()
+        currentAssetID = ""
         DispatchQueue.main.async {
             self.selectImgBtn.setTitle("Select Images", for: .normal)
             self.collectionView.reloadData()
@@ -317,6 +304,7 @@ class ViewController: UIViewController{
         }
     }
     
+    // Create and present an alert.
     func showAlertWith(title: String, message: String, transfer: String) {
         guard let photosUrl = URL(string: "photos-redirect://") else {
             return
@@ -346,6 +334,7 @@ class ViewController: UIViewController{
         }
     }
     
+    // Retrieve metadata with asset ID.
     private func getMetadata(asset: PHAsset) -> Dictionary<String, Any> {
         var dict: Dictionary<String, Any> = [:]
         dict["mediaType"] = asset.mediaType
@@ -359,6 +348,7 @@ class ViewController: UIViewController{
         return dict
     }
     
+    // Receive data from sender VC to main.
     @IBAction func unwindToMain(_ unwindSegue: UIStoryboardSegue) {
         let sender = unwindSegue.source
         if sender is settingsVC {
@@ -368,12 +358,18 @@ class ViewController: UIViewController{
                 saveAsCopy = senderVC.saveAsCopySwitch.isOn
                 sliderValue = senderVC.compressionSlider.value
             }
+        } else if sender is ReviewVC {
+            if let senderVC = sender as? ReviewVC {
+                print("[-] Review process complete")
+                aimOrderedIDs = [String](repeating: "", count: senderVC.numberOfSavedImages)
+                cleanUp(showMessage: true)
+            }
         }
-        // Use data from the view controller which initiated the unwind segue
     }
     
+    // Transfer data from current VC to destination.
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        print("Time to segue with: '\(segue.identifier!)'")
+        print("Segue from Home to: '\(segue.identifier!)'")
         if segue.identifier == "metadataVC" {
             let vc = segue.destination as! metadataVC
             vc.receiveMD = transferMD
@@ -384,8 +380,21 @@ class ViewController: UIViewController{
             vc.segueSettings["save"] = saveAsCopy
             vc.segueSettings["slider"] = sliderValue
         }
+        if segue.identifier == "ReviewVC" {
+            let vc = segue.destination as! ReviewVC
+            vc.receiveAimMap = aimMap
+            vc.receiveAimOrderedIDs = aimOrderedIDs
+            
+            vc.segueSettings["delete"] = shouldDeleteLocation
+            vc.segueSettings["blur"] =  shouldBlurFaces
+            vc.segueSettings["save"] = saveAsCopy
+            vc.segueSettings["slider"] = sliderValue
+            
+            aimMap.removeAll()
+        }
     }
     
+    // Setup collection view.
     fileprivate func configureCV() {
         let insetSize: CGFloat = 10
         let spacing: CGFloat = 10
@@ -404,9 +413,10 @@ class ViewController: UIViewController{
         collectionView.reloadData()
     }
     
+    // Add clear button on top of CV.
     fileprivate func addClearSelectionBtn(){
-        print("[–] Adding clear selection btn")
-        clearSelectionBtn = UIButton(frame: CGRect(x: collectionView.frame.minX, y: collectionView.frame.maxY, width: 50, height: 40)) // utilized in setClearBtnText()
+        print("[-] Adding clear selection btn")
+        clearSelectionBtn = UIButton(frame: CGRect(x: collectionView.frame.minX, y: collectionView.frame.maxY, width: 50, height: 40))
         clearSelectionBtn.translatesAutoresizingMaskIntoConstraints = false
         if #available(iOS 12.0, *) {
             setClearBtnText(darkMode: traitCollection.userInterfaceStyle == .dark)
@@ -443,9 +453,9 @@ class ViewController: UIViewController{
         }
     }
     
-    // Sets attributed text for info label
+    // Set attributed text for info label.
     func setInfoLabel() {
-        print("[–] Add info label")
+        print("[-] Add info label")
         let attachment = NSTextAttachment()
         attachment.image = UIImage(named: "info-blue")
         let imageOffsetY: CGFloat = -infoLbl.frame.height/4
@@ -458,10 +468,11 @@ class ViewController: UIViewController{
         infoLbl.attributedText = completeText
     }
     
+    // Setup instruction view text.
     func instructionViewSetup() -> UITextView {
         var instructionView = UITextView()
         instructionView = UITextView(frame: CGRect(x: collectionView.frame.minX + 16, y: collectionView.frame.minY + 30, width: collectionView.frame.width - 32, height: 160))
-        let sentence = NSAttributedString(string: "How to use:\n1. Select images\n2. Tap on an image to view metadata\n3. Adjust settings as appropriate\n4. Process photos")
+        let sentence = NSAttributedString(string: "How to use:\n1. Select images\n2. Tap an image to view metadata\n3. Adjust settings\n4. Process photos\n5. Review and edit photos")
         instructionView.attributedText = sentence
         instructionView.font = UIFont(name: "Avenir-Medium", size: 17.0)
         instructionView.isEditable = false
@@ -473,6 +484,7 @@ class ViewController: UIViewController{
         return instructionView
     }
     
+    // Show information view overlay.
     @IBAction func infoBtnAction(_ sender: Any) {
         let overlayInstructionView = instructionViewSetup()
         overlayInstructionView.font = UIFont(name: "Avenir-Medium", size: 18.0)
@@ -519,7 +531,6 @@ class ViewController: UIViewController{
         }
     }
     
-    
     func removeSpinner() {
         print("[-] Remove spinner")
         DispatchQueue.main.async {
@@ -534,7 +545,7 @@ class ViewController: UIViewController{
 extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return selectedAssets.count
+        return aimMap.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -543,11 +554,12 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as! CollectionViewCell
         cell.layer.cornerRadius = 12
         
-        let pic = fetchThumbnail(asset: selectedAssets[indexPath.item])
+        let aimObj = self.aimMap[self.aimOrderedIDs[indexPath.item]]!
+        let pic = fetchThumbnail(asset: aimObj.asset)
         cell.displayContent(image: pic, index: indexPath.item)
         
         cell.viewMetadataTapAction = {
-            self.transferMD = self.metadataArray[cell.index]
+            self.transferMD = aimObj.metadata
             self.performSegue(withIdentifier: "metadataVC", sender: self)
         }
         

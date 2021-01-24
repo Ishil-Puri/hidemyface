@@ -25,7 +25,6 @@ class settingsVC: UIViewController {
     var segueSettings: Dictionary<String, Any> = Dictionary()
     
     override func viewDidLoad() {
-        print("[-] Settings VC loaded")
         saveBtn.layer.cornerRadius = 15
         aboutBtn.layer.cornerRadius = 15
         websiteBtn.layer.cornerRadius = 15
@@ -43,7 +42,7 @@ class settingsVC: UIViewController {
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        print("[-] Settings Saved:\nDelete location data = \(deleteLocationSwitch.isOn)\nBlur faces in image = \(blurFacesSwitch.isOn)\nSave as a copy = \(saveAsCopySwitch.isOn)\nSlider value = \(compressionSlider.value)")
+        print("[-] Settings Saved:\n• Delete location: \(deleteLocationSwitch.isOn)\n• Blur faces: \(blurFacesSwitch.isOn)\n• Save as copy: \(saveAsCopySwitch.isOn)\n• Slider val: \(compressionSlider.value)")
     }
     
     @IBAction func aboutAction(_ sender: Any) {
@@ -56,7 +55,7 @@ class settingsVC: UIViewController {
         ac.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
             if let url = NSURL(string: "http://www.hidemyface.xyz") {
                 if UIApplication.shared.canOpenURL(url as URL) {
-                    print("[–] Launching website")
+                    print("[-] Launching website")
                     UIApplication.shared.open(url as URL)
                 }
             }
