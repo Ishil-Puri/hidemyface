@@ -275,7 +275,29 @@ class ViewController: UIViewController{
                 faceBoxes.append(face.boundingBox.applying(CGAffineTransform(scaleX: CGFloat(image.size.width), y: -CGFloat(image.size.height))).applying(CGAffineTransform(translationX: 0, y: CGFloat(image.size.height))))
             }
             faceBoxes.forEach { box in
-                rendererContext.fill(box)
+//                rendererContext.fill(box)
+                UIColor.systemGreen.setStroke()
+                rendererContext.cgContext.setLineWidth(10.0)
+                rendererContext.stroke(box)
+            }
+            var left: [[CGPoint]?] = []
+            var right: [[CGPoint]?] = []
+            faces.forEach{ face in
+                left.append(face.landmarks?.leftEye!.normalizedPoints)
+                right.append(face.landmarks?.rightEye!.normalizedPoints)
+            }
+            
+            let newLayer = CAShapeLayer()
+            let path = UIBezierPath()
+            left.forEach{ points in
+                path.move(to: CGPoint(x: points![0].x, y: points![0].y))
+                for i in 0..<points!.count-1 {
+                    let point = CGPoint(x: points![i].x, y: points![i].y)
+                    path.addLine(to: point)
+                    path.move(to: point)
+                }
+                newLayer.path = path.cgPath
+//                rendererContext.
             }
         }
         print("Done drawing, size: \(renderedImage.size)")
