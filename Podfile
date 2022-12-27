@@ -8,5 +8,6 @@ target 'stopBigBrother' do
   # Pods for stopBigBrother
   pod "BSImagePicker", "~> 3.2"
   pod 'iOSPhotoEditor', '~> 1.0'
+  pod 'BuyMeACoffee', '~> 1.0'
 
 end
