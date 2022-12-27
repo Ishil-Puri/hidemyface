@@ -4,21 +4,28 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>BSImagePicker.xcscheme_^#shared#^_</key>
+		<key>BSImagePicker.xcscheme</key>
 		<dict>
-			<key>orderHint</key>
-			<integer>1</integer>
+			<key>isShown</key>
+			<false/>
 		</dict>
-		<key>Pods-stopBigBrother.xcscheme_^#shared#^_</key>
+		<key>BuyMeACoffee.xcscheme</key>
 		<dict>
-			<key>orderHint</key>
-			<integer>3</integer>
+			<key>isShown</key>
+			<false/>
 		</dict>
-		<key>iOSPhotoEditor.xcscheme_^#shared#^_</key>
+		<key>Pods-stopBigBrother.xcscheme</key>
 		<dict>
-			<key>orderHint</key>
-			<integer>2</integer>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>iOSPhotoEditor.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
 		</dict>
 	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict/>
 </dict>
 </plist>

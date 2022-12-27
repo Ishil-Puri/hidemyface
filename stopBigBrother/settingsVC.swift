@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import BuyMeACoffee
 
 class settingsVC: UIViewController {
     
@@ -25,6 +26,9 @@ class settingsVC: UIViewController {
     var segueSettings: Dictionary<String, Any> = Dictionary()
     
     override func viewDidLoad() {
+        BMCManager.shared.presentingViewController = self
+        BMCManager.shared.thankYouMessage = "Thank you for supporting 🎉 Hide My Face !"
+        
         saveBtn.layer.cornerRadius = 15
         aboutBtn.layer.cornerRadius = 15
         websiteBtn.layer.cornerRadius = 15

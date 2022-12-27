@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import BuyMeACoffee
 
 @UIApplicationMain
 @available(iOS 13.0, *)
@@ -16,6 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        BMCManager.shared.configure(username: "ishilp")
         return true
     }
 
